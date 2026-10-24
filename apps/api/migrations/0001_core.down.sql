@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS number_sequences;
+DROP TRIGGER IF EXISTS audit_log_append_only ON audit_log;
+DROP TABLE IF EXISTS audit_log;
+DROP FUNCTION IF EXISTS forbid_audit_mutation();
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS role_assignments;
+DROP TABLE IF EXISTS sites;
+DROP TABLE IF EXISTS projects;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS organizations;

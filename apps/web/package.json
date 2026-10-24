@@ -1,0 +1,26 @@
+{
+  "name": "@forgehse/web",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch",
+    "typecheck": "tsc -p tsconfig.json",
+    "typecheck:offline": "tsc -p tsconfig.offline.json",
+    "e2e": "node e2e/run.mjs",
+    "test": "tsx --test src/lib/*.test.ts"
+  },
+  "dependencies": {
+    "@forgehse/shared": "*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "esbuild": ">=0.24.0",
+    "playwright": "^1.50.0",
+    "typescript": "^5.7.0 || ^6.0.0"
+  }
+}

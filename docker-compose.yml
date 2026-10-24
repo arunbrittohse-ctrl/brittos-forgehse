@@ -1,0 +1,44 @@
+# Local / single-server deployment. For production, put a TLS-terminating reverse proxy
+# (nginx, Caddy, a cloud load balancer) in front of `app` and use a managed PostgreSQL if available.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: forgehse
+      POSTGRES_USER: forgehse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forgehse -d forgehse"]
+      interval: 10s
+      retries: 5
+    restart: unless-stopped
+
+  migrate:
+    image: forgehse:${FORGEHSE_VERSION:-0.1.0}
+    build: .
+    command: ["node", "dist/cli/migrate.js", "up"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://forgehse:${POSTGRES_PASSWORD}@db:5432/forgehse
+    depends_on:
+      db: { condition: service_healthy }
+
+  app:
+    image: forgehse:${FORGEHSE_VERSION:-0.1.0}
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://forgehse:${POSTGRES_PASSWORD}@db:5432/forgehse
+    ports:
+      - "127.0.0.1:4000:4000"   # expose only to the local reverse proxy
+    volumes:
+      - storage:/data/storage
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  storage:

@@ -1,0 +1,26 @@
+{
+  "name": "forgehse",
+  "private": true,
+  "version": "0.2.0",
+  "description": "BRITTO'S FORGEHSE \u2014 AI-Powered HSE Intelligence Platform",
+  "type": "module",
+  "workspaces": [
+    "packages/shared",
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w @forgehse/api",
+    "dev:web": "npm run dev -w @forgehse/web",
+    "migrate": "npm run migrate -w @forgehse/api --",
+    "seed": "npm run seed -w @forgehse/api --",
+    "test": "npm run test -w @forgehse/shared && npm run test -w @forgehse/web && npm run test -w @forgehse/api",
+    "typecheck": "npm run typecheck -w @forgehse/shared && npm run typecheck -w @forgehse/api && npm run typecheck -w @forgehse/web",
+    "build": "npm run build -w @forgehse/api && npm run build -w @forgehse/web",
+    "e2e": "npm run e2e -w @forgehse/web",
+    "mock:ai": "node scripts/dev/mock-anthropic.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

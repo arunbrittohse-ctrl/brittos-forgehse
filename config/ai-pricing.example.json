@@ -1,0 +1,32 @@
+{
+  "version": "YYYY-MM-DD-verified",
+  "verified": false,
+  "source": "Copy each figure from https://platform.claude.com/docs/en/about-claude/pricing, then set verified to true.",
+  "currency": "USD",
+  "models": {
+    "claude-sonnet-5-5": {
+      "inputPerMTok": 2,
+      "outputPerMTok": 10,
+      "cacheWrite5mPerMTok": 2.5,
+      "cacheWrite1hPerMTok": 4,
+      "cacheReadPerMTok": 0.1,
+      "minCacheableTokens": 1024
+    },
+    "claude-haiku-5-5": {
+      "inputPerMTok": 0.1,
+      "outputPerMTok": 0.5,
+      "cacheWrite5mPerMTok": 0.125,
+      "cacheWrite1hPerMTok": 0.2,
+      "cacheReadPerMTok": 0.01,
+      "minCacheableTokens": 1024,
+      "longContext": {
+        "thresholdTokens": 100000,
+        "inputPerMTok": 0.5,
+        "outputPerMTok": 2.5,
+        "cacheWrite5mPerMTok": 0.625,
+        "cacheWrite1hPerMTok": 1,
+        "cacheReadPerMTok": 0.05
+      }
+    }
+  }
+}

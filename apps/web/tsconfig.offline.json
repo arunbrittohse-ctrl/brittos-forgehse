@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.json",
+  // Offline shim types JSX intrinsic props loosely, so inline handler params cannot be inferred.
+  "compilerOptions": { "noImplicitAny": false },
+  "include": ["src", "types-offline"],
+  "exclude": ["src/**/*.test.ts"]
+}
