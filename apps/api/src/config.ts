@@ -15,6 +15,8 @@ const envSchema = z.object({
   /** Set true when served over HTTPS (production) so cookies get the Secure flag. */
   COOKIE_SECURE: z.enum(['true', 'false']).default('false').transform((v) => v === 'true'),
   SESSION_TTL_HOURS_WEB: z.coerce.number().int().min(1).max(24 * 30).default(12),
+  /** Optional web session lifetime when the user explicitly selects "Remember this device" (7 days). */
+  SESSION_TTL_HOURS_WEB_REMEMBERED: z.coerce.number().int().min(1).max(24 * 30).default(24 * 7),
   SESSION_TTL_HOURS_MOBILE: z.coerce.number().int().min(1).max(24 * 90).default(24 * 14),
   STORAGE_DIR: z.string().default('./storage'),
   /** 'disk' (STORAGE_DIR) or 'postgres' (object_store table, for serverless hosts). */
@@ -45,7 +47,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (parsed.data.NODE_ENV === 'production' && !parsed.data.COOKIE_SECURE) {
     throw new Error('COOKIE_SECURE must be true in production (serve the app over HTTPS).');
   }
-  if (parsed.data.NODE_ENV === 'production' && /^https?:\/\/(localhost|127\.|0\.0\.0\.0|\[::1\])/i.test(parsed.data.ANTHROPIC_BASE_URL)) {
+  if (parsed.data.NODE_ENV === 'production' && /^https?:\\/\\/(localhost|127\\.|0\\.0\\.0\\.0|\\[::1\\])/i.test(parsed.data.ANTHROPIC_BASE_URL)) {
     throw new Error('ANTHROPIC_BASE_URL points at a local address in production. The local mock AI server is for development and tests only.');
   }
   return parsed.data;
