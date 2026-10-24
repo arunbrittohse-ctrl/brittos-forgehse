@@ -11,6 +11,7 @@ export function Login() {
   const { search } = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberDevice, setRememberDevice] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -18,7 +19,7 @@ export function Login() {
     e.preventDefault();
     setBusy(true); setError('');
     try {
-      const r = await api<{ mustChangePassword: boolean }>('/auth/login', { body: { email, password, client: 'web' } });
+      const r = await api<{ mustChangePassword: boolean }>('/auth/login', { body: { email, password, client: 'web', rememberDevice } });
       await reload();
       const next = search.get('next');
       navigate(r.mustChangePassword ? '/app/account?required=1' : next && next.startsWith('/app') ? next : '/app', { replace: true });
@@ -53,8 +54,12 @@ export function Login() {
           <Field label="Password" htmlFor="password">
             <input id="password" className="input" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </Field>
+          <label className="small muted" htmlFor="remember-device" style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <input id="remember-device" type="checkbox" checked={rememberDevice} onChange={(e) => setRememberDevice(e.target.checked)} />
+            Remember this device for 7 days
+          </label>
           <button className="btn btn-primary btn-lg" style={{ width: '100%' }} disabled={busy || !email || !password}>{busy ? 'Signing in…' : 'Sign in'}</button>
-          <p className="small muted">Forgotten your password? Ask your organisation administrator to reset it.</p>
+          <p className="small muted">For your security, use this option only on a trusted personal or work device. Forgotten your password? Ask your organisation administrator to reset it.</p>
         </form>
       </main>
     </div>

@@ -1,6 +1,7 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { freshDb, startApp, seedWorld, Client, email, PASSWORD, type TestApp, type World } from './helpers';
+import { hashToken } from '../src/auth/session';
 
 describe('authentication & sessions', () => {
   let app: TestApp; let w: World;
@@ -13,12 +14,48 @@ describe('authentication & sessions', () => {
     assert.equal(r.status, 200);
     const sc = r.headers.get('set-cookie')!;
     assert.match(sc, /HttpOnly/); assert.match(sc, /SameSite=Strict/);
+    assert.match(sc, /Max-Age=43200/, 'normal web session remains 12 hours');
     assert.equal(r.data.token, undefined, 'web login must not expose the token in the body');
     const me = await c.get('/api/auth/me');
     assert.equal(me.status, 200);
     assert.equal(me.data.user.email, email('engA1'));
     assert.ok(me.data.permissions.includes('observation.verify'));
     assert.deepEqual(me.data.projects.map((p: { code: string }) => p.code), ['A1']);
+    const token = c.cookie.split('=')[1]!;
+    const expiry = await app.db.query<{ seconds: number }>(
+      'SELECT extract(epoch FROM (expires_at - now()))::int AS seconds FROM sessions WHERE token_hash = $1',
+      [hashToken(token)],
+    );
+    assert.ok(expiry.rows[0]!.seconds >= 11 * 3600 && expiry.rows[0]!.seconds <= 12 * 3600, 'server expiry remains 12 hours');
+  });
+
+  it('allows an explicitly remembered web device for 7 days with server-side expiry', async () => {
+    const c = new Client(app.base);
+    const r = await c.post('/api/auth/login', { email: email('offA1'), password: PASSWORD, client: 'web', rememberDevice: true });
+    assert.equal(r.status, 200);
+    const sc = r.headers.get('set-cookie')!;
+    assert.match(sc, /HttpOnly/);
+    assert.match(sc, /SameSite=Strict/);
+    assert.match(sc, /Max-Age=604800/, 'remembered cookie lifetime is 7 days');
+    assert.equal(r.data.token, undefined, 'web login must not expose the token in the body');
+    const token = c.cookie.split('=')[1]!;
+    const expiry = await app.db.query<{ seconds: number }>(
+      'SELECT extract(epoch FROM (expires_at - now()))::int AS seconds FROM sessions WHERE token_hash = $1',
+      [hashToken(token)],
+    );
+    assert.ok(expiry.rows[0]!.seconds >= 6 * 24 * 3600 + 23 * 3600, 'server-side session expiry is approximately 7 days');
+    assert.ok(expiry.rows[0]!.seconds <= 7 * 24 * 3600, 'server-side session does not exceed 7 days');
+    assert.equal((await c.get('/api/auth/me')).status, 200);
+    assert.equal((await c.post('/api/auth/logout')).status, 204);
+    assert.equal((await c.get('/api/auth/me')).status, 401, 'remembered sessions remain revocable');
+  });
+
+  it('ignores the remember-device preference for mobile clients', async () => {
+    const m = new Client(app.base, 'mobile');
+    const r = await m.post('/api/auth/login', { email: email('supA1x'), password: PASSWORD, client: 'mobile', rememberDevice: true });
+    assert.equal(r.status, 200);
+    assert.equal(r.data.expiresInHours, 24 * 14, 'mobile lifetime is unchanged');
+    assert.equal(r.headers.get('set-cookie'), null);
   });
 
   it('rejects wrong passwords and unknown emails with the same message', async () => {
