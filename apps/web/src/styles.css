@@ -552,6 +552,24 @@ a.kpi:hover::after { transform: scaleX(1); }
   border-radius: 50%;
   background: var(--britto-crimson);
 }
+.telemetry-card__classification[data-severity='high'] {
+  color: #fed7aa;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.55);
+}
+.telemetry-card__classification[data-severity='high']::before { background: var(--britto-warning); }
+.telemetry-card__classification[data-severity='medium'] {
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.38);
+}
+.telemetry-card__classification[data-severity='medium']::before { background: var(--britto-warning); }
+.telemetry-card__classification[data-severity='low'] {
+  color: #99f6e4;
+  background: rgba(20, 184, 166, 0.10);
+  border-color: rgba(20, 184, 166, 0.42);
+}
+.telemetry-card__classification[data-severity='low']::before { background: var(--britto-teal); }
 .telemetry-card__actions {
   display: flex;
   flex-wrap: wrap;
