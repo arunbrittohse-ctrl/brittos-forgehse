@@ -21,6 +21,26 @@
   --cool: #64748b;
   --hard-shadow: #040b16;
 
+  /* Canonical BRITTO'S FORGEHSE aliases for shared design-system components.
+     Keep the existing light/dark application theme tokens below unchanged. */
+  --britto-canvas: #0b1f3b;
+  --britto-card: #111e32;
+  --britto-surface: #16263d;
+  --britto-electric: #3b82f6;
+  --britto-teal: #14b8a6;
+  --britto-platinum: #c7d2fe;
+  --britto-crimson: #ef4444;
+  --britto-slate: #475569;
+  --britto-border: #334155;
+  --britto-text-primary: #ffffff;
+  --britto-text-secondary: #a0aec0;
+  --britto-success: #16a34a;
+  --britto-warning: #f59e0b;
+  --britto-info: #60a5fa;
+  --britto-shadow-hard: 4px 4px 0 #040b16;
+  --britto-shadow-card: 0 8px 24px rgba(4, 11, 22, 0.22);
+  --britto-display: 'Manrope', 'Inter Display', 'Inter', system-ui, sans-serif;
+
   --bg: #f5f7fb;
   --surface: #ffffff;
   --surface-2: #eef2f8;
@@ -449,6 +469,134 @@ a.kpi:hover::after { transform: scaleX(1); }
 .cmdk-foot { display: flex; gap: 14px; padding: 10px 16px; border-top: 1px solid var(--line); font-size: 0.78rem; color: var(--muted); }
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes pop-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } }
+
+/* =================================================================== BRITTO telemetry event card
+   Dark, self-contained component surface; does not change the app's light/dark theme. */
+.telemetry-card {
+  width: 100%;
+  max-width: 28rem;
+  min-width: 0;
+  padding: 16px;
+  color: var(--britto-text-primary);
+  background: var(--britto-card);
+  border: 1px solid var(--britto-slate);
+  border-radius: var(--r);
+  box-shadow: var(--britto-shadow-hard);
+}
+.telemetry-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--britto-border);
+}
+.telemetry-card__feed {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--britto-teal);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+.telemetry-card__pulse {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--britto-teal);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.14);
+  animation: telemetry-pulse 1.8s ease-in-out infinite;
+}
+.telemetry-card__id {
+  color: var(--britto-text-secondary);
+  font: 0.75rem/1.4 var(--mono);
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+.telemetry-card__body { padding: 16px 0; }
+.telemetry-card__title {
+  color: var(--britto-text-primary);
+  font: 600 1.05rem/1.35 var(--britto-display);
+  letter-spacing: -0.015em;
+}
+.telemetry-card__description {
+  margin-top: 8px;
+  color: var(--britto-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.telemetry-card__classification {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 5px 9px;
+  color: #fff;
+  background: rgba(239, 68, 68, 0.13);
+  border: 1px solid rgba(239, 68, 68, 0.55);
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.telemetry-card__classification::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--britto-crimson);
+}
+.telemetry-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--britto-border);
+}
+.telemetry-card__actions .btn { min-width: 0; }
+.telemetry-card__actions .btn-primary {
+  background: var(--britto-electric);
+  border-color: var(--britto-electric);
+  box-shadow: none;
+}
+.telemetry-card__actions .btn-primary:hover { background: #2563eb; }
+.telemetry-card__actions .btn-telemetry-secondary {
+  color: var(--britto-platinum);
+  background: transparent;
+  border-color: var(--britto-slate);
+}
+.telemetry-card__actions .btn-telemetry-secondary:hover {
+  background: rgba(199, 210, 254, 0.08);
+  border-color: var(--britto-platinum);
+}
+.telemetry-card__feedback {
+  margin-top: 10px;
+  color: var(--britto-text-secondary);
+  font-size: 0.82rem;
+}
+.telemetry-card__feedback[data-state='error'] { color: #fca5a5; }
+.telemetry-card__feedback[data-state='success'] { color: #5eead4; }
+.telemetry-card button:disabled { cursor: wait; opacity: 0.65; }
+@keyframes telemetry-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+@media (max-width: 420px) {
+  .telemetry-card { padding: 13px; }
+  .telemetry-card__header { align-items: flex-start; }
+  .telemetry-card__actions { display: grid; grid-template-columns: 1fr; }
+  .telemetry-card__actions .btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .telemetry-card__pulse { animation: none; }
+}
+:root[data-motion='reduced'] .telemetry-card__pulse { animation: none; }
 
 /* =================================================================== AI Studio */
 .studio { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 0; height: calc(100vh - 61px); margin: -26px -28px -60px; }
