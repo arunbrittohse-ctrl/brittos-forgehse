@@ -13,7 +13,11 @@ const LOCK_MINUTES = 15;
 
 export function registerAuthRoutes(r: Router, { db, config, limiters }: Deps) {
   r.post('/api/auth/login', async (ctx) => {
-    const body = await ctx.json(loginSchema.extend({ organizationId: z.string().uuid().optional() }));
+    const body = await ctx.json(loginSchema.extend({
+      organizationId: z.string().uuid().optional(),
+      /** Applies only to browser sessions; omitted/false retains the existing 12-hour default. */
+      rememberDevice: z.boolean().optional().default(false),
+    }));
     limiters.loginIp.check(`login-ip:${ctx.ip}`);
     limiters.loginEmail.check(`login-email:${body.email}`);
 
@@ -43,7 +47,9 @@ export function registerAuthRoutes(r: Router, { db, config, limiters }: Deps) {
     if (orgs.length === 0) throw forbidden('Your account has no role in any organisation. Contact your administrator.');
     const orgId = body.organizationId && orgs.includes(body.organizationId) ? body.organizationId : orgs[0]!;
 
-    const ttlHours = body.client === 'mobile' ? config.SESSION_TTL_HOURS_MOBILE : config.SESSION_TTL_HOURS_WEB;
+    const ttlHours = body.client === 'mobile'
+      ? config.SESSION_TTL_HOURS_MOBILE
+      : body.rememberDevice ? config.SESSION_TTL_HOURS_WEB_REMEMBERED : config.SESSION_TTL_HOURS_WEB;
     const { token, hash } = newToken();
     await db.transaction(async (tx) => {
       await tx.query(
