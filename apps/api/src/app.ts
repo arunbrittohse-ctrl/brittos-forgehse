@@ -2,7 +2,7 @@ import type { Config } from './config';
 import type { Db } from './db/db';
 import { Router, RateLimiter, createServer, createLogger, type Logger } from './http/core';
 import { resolveAuth } from './auth/session';
-import { LocalDiskStorage, type ObjectStorage } from './services/storage';
+import { LocalDiskStorage, PgStorage, type ObjectStorage } from './services/storage';
 import { ClaudeService } from './ai/claude';
 import { loadPricing } from './ai/pricing';
 import { registerAuthRoutes } from './routes/auth';
@@ -36,7 +36,7 @@ export function buildDeps(config: Config, db: Db, overrides: Partial<Deps> = {})
     db,
     config,
     log,
-    storage: overrides.storage ?? new LocalDiskStorage(config.STORAGE_DIR),
+    storage: overrides.storage ?? (config.STORAGE_DRIVER === 'postgres' ? new PgStorage(db) : new LocalDiskStorage(config.STORAGE_DIR)),
     ai: overrides.ai ?? new ClaudeService({
       apiKey: config.ANTHROPIC_API_KEY,
       baseUrl: config.ANTHROPIC_BASE_URL,

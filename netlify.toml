@@ -1,0 +1,33 @@
+# BRITTO'S FORGEHSE on Netlify: the web app is static (apps/web/dist) and the API runs as one
+# Netlify Function (netlify/functions/api.mts) on Prisma Postgres. Secrets are Netlify env vars.
+[build]
+  command = "node scripts/netlify/gen-migrations.mjs && npm run build -w @forgehse/web"
+  publish = "apps/web/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = []
+
+# Single-page app: unknown paths load index.html (the /api/* function route takes priority).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "no-referrer"
+    Permissions-Policy = "geolocation=(), microphone=(self), camera=(self)"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

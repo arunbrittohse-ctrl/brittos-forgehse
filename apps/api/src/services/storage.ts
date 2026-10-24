@@ -45,3 +45,18 @@ export function sniffContentType(buf: Buffer): { type: string; ext: string } | n
   if (buf.toString('ascii', 4, 8) === 'ftyp' && /heic|heix|mif1|heif/.test(buf.toString('ascii', 8, 12))) return { type: 'image/heic', ext: 'heic' };
   return null;
 }
+
+/** Stores objects in PostgreSQL (table object_store). Used on serverless hosts with no persistent disk. */
+export class PgStorage implements ObjectStorage {
+  constructor(private db: { query(sql: string, params?: readonly unknown[]): Promise<{ rows: Record<string, unknown>[] }> }) {}
+  async put(key: string, data: Buffer, contentType: string) {
+    if (!/^[a-z0-9/_-]+$/i.test(key) || key.includes('..')) throw new Error('Invalid storage key');
+    await this.db.query('INSERT INTO object_store (key, content_type, size_bytes, data_b64) VALUES ($1,$2,$3,$4)', [key, contentType, data.length, data.toString('base64')]);
+  }
+  async get(key: string) {
+    const r = (await this.db.query('SELECT data_b64 FROM object_store WHERE key = $1', [key])).rows[0];
+    if (!r) throw new Error('not found');
+    return Buffer.from(String(r.data_b64), 'base64');
+  }
+  async delete(key: string) { await this.db.query('DELETE FROM object_store WHERE key = $1', [key]); }
+}

@@ -17,6 +17,8 @@ const envSchema = z.object({
   SESSION_TTL_HOURS_WEB: z.coerce.number().int().min(1).max(24 * 30).default(12),
   SESSION_TTL_HOURS_MOBILE: z.coerce.number().int().min(1).max(24 * 90).default(24 * 14),
   STORAGE_DIR: z.string().default('./storage'),
+  /** 'disk' (STORAGE_DIR) or 'postgres' (object_store table, for serverless hosts). */
+  STORAGE_DRIVER: z.enum(['disk', 'postgres']).default('disk'),
   MAX_UPLOAD_MB: z.coerce.number().min(1).max(50).default(15),
   /** Serve the built web app from this directory (optional, single-container deploys). */
   WEB_DIST_DIR: z.string().optional(),

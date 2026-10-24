@@ -10,3 +10,5 @@ apps/mobile/android/
 apps/mobile/ios/
 coverage/
 apps/web/e2e/screens/
+netlify/functions/_migrations.generated.ts
+.netlify/

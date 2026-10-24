@@ -55,9 +55,9 @@ describe('database layer', () => {
   it('migrations roll back and re-apply cleanly, and detect edited migrations', async () => {
     const fresh = await freshDb();
     try {
+      assert.equal(await migrateDown(fresh), '0005_object_store');
       assert.equal(await migrateDown(fresh), '0004_studio_chat');
-      assert.equal(await migrateDown(fresh), '0003_ai_usage');
-      assert.deepEqual(await migrateUp(fresh), ['0003_ai_usage', '0004_studio_chat']);
+      assert.deepEqual(await migrateUp(fresh), ['0004_studio_chat', '0005_object_store']);
     await fresh.query("UPDATE schema_migrations SET checksum = 'tampered' WHERE version = '0001_core'");
       await assert.rejects(migrateUp(fresh), /modified after it was applied/);
     } finally {
