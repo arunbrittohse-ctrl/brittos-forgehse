@@ -743,3 +743,9 @@ a.bar-row:hover, a.bar-row:focus-visible { background: var(--surface-2); }
 @media(max-width:1000px) { .studio-doc-layout { grid-template-columns:1fr; } }
 @media(max-width:560px) { .studio-doc-layout .grid.two,.hazard-checks { grid-template-columns:1fr; } .studio-doc-layout .panel-body { padding:12px; } }
 @media print { body * { visibility:hidden !important; } .paper-preview,.paper-preview * { visibility:visible !important; } .paper-preview { position:absolute; left:0; top:0; width:100%; border:0; padding:0; } .paper-preview section { break-inside:avoid; } }
+
+.revision-history { border:1px solid var(--line); border-radius:9px; padding:12px; margin:14px 0; }
+.revision-history h3 { margin:0 0 8px; font-size:.9rem; }
+.revision-row { display:grid; grid-template-columns:44px minmax(0,1fr) auto; gap:10px; align-items:center; padding:7px 0; border-top:1px solid var(--line); font-size:.78rem; }
+.revision-row span,.revision-row time { color:var(--muted); }
+@media(max-width:560px) { .revision-row { grid-template-columns:36px 1fr; } .revision-row time { grid-column:2; } }
