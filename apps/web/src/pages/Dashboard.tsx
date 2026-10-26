@@ -24,6 +24,7 @@ interface DashboardData {
   openRiskMatrix: { size: number; bands: { band: RiskBand; minScore: number }[]; cells: { likelihood: number; severity: number; count: number }[] };
   modules: Record<string, { available: boolean }>;
 }
+interface RecentObservation { id: string; refNo: string; hazardCategory: string; location: string; riskBand: RiskBand; riskScore: number; status: ObservationStatus; observedAt: string; projectCode: string; siteName: string }
 
 const PERIODS = [{ days: 30, label: '30 days' }, { days: 90, label: '90 days' }, { days: 365, label: '12 months' }];
 const MODULE_LABELS: Record<string, string> = { incidents: 'Incidents', permits: 'Permits to work', inspections: 'Inspections', riskAssessments: 'Risk assessments', training: 'Training', manHours: 'Man-hours', environmental: 'Environmental' };
@@ -32,9 +33,12 @@ export function Dashboard() {
   const { me, can } = useAuth();
   const [ask, setAsk] = useState('');
   const [projectId, setProjectId] = useState('');
+  const [siteId, setSiteId] = useState('');
+  const [status, setStatus] = useState('');
   const [days, setDays] = useState(90);
   const from = todayISO(-(days - 1));
-  const { data, error, loading, reload } = useAsync(() => api<DashboardData>('/dashboard', { query: { projectId, from, to: todayISO() } }), [projectId, days]);
+  const { data, error, loading, reload } = useAsync(() => api<DashboardData>('/dashboard', { query: { projectId, siteId, status, from, to: todayISO() } }), [projectId, siteId, status, days]);
+  const recent = useAsync(() => api<{ items: RecentObservation[] }>('/observations', { query: { projectId, siteId, status: status || undefined, from, to: todayISO(), page: 1, pageSize: 6 } }), [projectId, siteId, status, days]);
   const listLink = (extra: Record<string, string>) => '/app/observations?' + new URLSearchParams({ ...(projectId ? { projectId } : {}), ...extra }).toString();
 
   const k = data?.kpis ?? {};
@@ -55,10 +59,12 @@ export function Dashboard() {
         sub={data ? `${fmtDate(data.period.from)} to ${fmtDate(data.period.to)}, ${data.period.timezone}` : undefined}
         actions={<>
           <label className="sr-only" htmlFor="dash-project">Project</label>
-          <select id="dash-project" className="select" style={{ width: 'auto' }} value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+          <select id="dash-project" className="select" style={{ width: 'auto' }} value={projectId} onChange={(e) => { setProjectId(e.target.value); setSiteId(''); }}>
             <option value="">All my projects</option>
             {me?.projects.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.code})</option>)}
           </select>
+          {projectId && <><label className="sr-only" htmlFor="dash-site">Site</label><select id="dash-site" className="select" style={{ width: 'auto' }} value={siteId} onChange={(e) => setSiteId(e.target.value)}><option value="">All sites</option>{me?.projects.find((p) => p.id === projectId)?.sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select></>}
+          <label className="sr-only" htmlFor="dash-status">Record status</label><select id="dash-status" className="select" style={{ width: 'auto' }} value={status} onChange={(e) => setStatus(e.target.value)}><option value="">All statuses</option><option value="open">Unassigned</option><option value="assigned">Assigned / in progress</option><option value="action_submitted">Awaiting verification</option><option value="closed">Closed</option></select>
           <div className="segmented" role="group" aria-label="Period">
             {PERIODS.map((p) => <button key={p.days} aria-pressed={days === p.days} onClick={() => setDays(p.days)}>{p.label}</button>)}
           </div>
@@ -163,10 +169,33 @@ export function Dashboard() {
             </section>
           </div>
 
+          <div className="dash-grid">
+            <section className="panel">
+              <div className="panel-head"><h2>Recent field activity</h2><span className="spacer" /><Link to={listLink({ from, to: todayISO() })}>View register</Link></div>
+              {recent.error && <div className="panel-body"><ErrorNotice error={recent.error} retry={recent.reload} /></div>}
+              {recent.loading && !recent.data && <Loading label="Loading recent activity" />}
+              {recent.data && recent.data.items.length === 0 && <Empty title="No recent activity in this scope">Records appear here when observations are submitted.</Empty>}
+              {recent.data && recent.data.items.length > 0 && <div className="activity-list">{recent.data.items.map((o) => <Link className="activity-item" key={o.id} to={`/app/observations/${o.id}`}><span className="activity-mark"><Icon name="eye" size={16} /></span><span className="activity-copy"><strong>{o.refNo} · {o.hazardCategory}</strong><span>{o.projectCode} / {o.siteName} · {o.location}</span><span className="small muted">{fmtDate(o.observedAt)}</span></span><RiskChip band={o.riskBand} score={o.riskScore} /></Link>)}</div>}
+            </section>
+            <section className="panel">
+              <div className="panel-head"><h2>Data availability</h2></div>
+              <div className="panel-body stack"><p className="small muted">Only observation metrics are currently calculated from live application records. Other KPIs remain unavailable until their source workflows and denominators exist.</p>
+                <div className="availability-list">{[
+                  ['LTIFR', 'Lost-time injuries and total hours worked required'],
+                  ['TRIR', 'Recordable injury count and total hours worked required'],
+                  ['Lost workdays', 'Verified incident and lost-time records required'],
+                  ['Inspection compliance', 'Scheduled and completed inspections required'],
+                  ['Training compliance', 'Eligible workforce and valid competency records required'],
+                  ['Emergency drill completion', 'Planned and completed drill records required'],
+                  ['Document approvals', 'Controlled-document approval workflow required'],
+                ].map(([label, reason]) => <div className="availability-row" key={label}><span><strong>{label}</strong><small>{reason}</small></span><span className="badge">Unavailable</span></div>)}</div>
+              </div>
+            </section>
+          </div>
           <section className="panel" style={{ marginTop: 20 }}>
             <div className="panel-head"><h2>Modules not yet enabled</h2></div>
             <div className="panel-body stack">
-              <p className="small muted">These indicators will appear here once each module is built and holding real records. Until then FORGEHSE shows nothing rather than a placeholder number.</p>
+              <p className="small muted">These modules have working navigation destinations but are not yet operational registers. No fabricated totals are shown.</p>
               <div className="modules">{Object.entries(data.modules).filter(([, m]) => !m.available).map(([key]) => <span key={key} className="module-chip">{MODULE_LABELS[key] ?? key}</span>)}</div>
             </div>
           </section>
