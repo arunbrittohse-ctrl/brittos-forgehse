@@ -1,0 +1,45 @@
+name: FORGEHSE verification
+
+on:
+  push:
+    branches:
+      - main
+      - "build/**"
+  pull_request:
+    branches:
+      - main
+      - "build/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: forgehse-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, tests and production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck all workspaces
+        run: npm run typecheck
+      - name: Run automated tests
+        run: npm test
+      - name: Build API and web app
+        run: npm run build
+      - name: Generate Netlify migration bundle
+        run: node scripts/netlify/gen-migrations.mjs
+      - name: Verify Netlify function bundle inputs
+        run: test -s netlify/functions/_migrations.generated.ts
