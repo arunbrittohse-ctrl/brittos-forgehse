@@ -96,7 +96,7 @@ export function registerHseDocumentRoutes(r:Router,{db}:Deps) {
  });
  r.patch('/api/hse-documents/:id',async ctx=>{
   const auth=requireAuth(ctx); if(!hasAnywhere(auth,'ai.use')) throw forbidden();
-  const b=z.object({title:z.string().trim().min(3).max(160),content:documentSchema,version:z.number().int().min(1),changeNote:z.string().max(500).default('Edited draft')}).parse(await ctx.json(z.unknown());
+  const b=z.object({title:z.string().trim().min(3).max(160),content:documentSchema,version:z.number().int().min(1),changeNote:z.string().max(500).default('Edited draft')}).parse(await ctx.json(z.unknown()));
   const p:unknown[]=[]; const W=visibility(auth,p);p.push(ctx.params.id);
   const row=(await db.query<Row>(...compactParams(`SELECT id,title,brief,content,version,created_at,updated_at,status,project_id,created_by FROM studio_items WHERE ${W} AND id=$${p.length}`,p))).rows[0];
   if(!row) throw notFound('HSE document'); if(row.created_by!==auth.userId) throw forbidden();
