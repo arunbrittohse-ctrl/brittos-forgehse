@@ -23,6 +23,7 @@ import { AiUsage } from './pages/AiUsage';
 import { Account } from './pages/Account';
 import { NotFound } from './pages/NotFound';
 import { ModuleWorkspace, type HseModuleKey } from './pages/ModuleWorkspace';
+import { HseDocumentStudio } from './pages/HseDocumentStudio';
 
 applyTheme(readPref('theme', 'light'));
 applyMotion();
@@ -36,6 +37,7 @@ function AppRoutes({ path }: { path: string }) {
   if ((m = match('/app/observations/:id', path))) return <ObservationDetail id={m.id!} />;
   if (path === '/app/assistant') return <Assistant />;
   if (path === '/app/studio') return <Studio />;
+  if (path === '/app/studio/hse-documents') return <HseDocumentStudio />;
   if (path === '/app/studio/library') return <StudioLibrary />;
   if ((m = match('/app/studio/items/:id', path))) return <StudioItemPage id={m.id!} />;
   if (path === '/app/admin/projects') return <AdminProjects />;
