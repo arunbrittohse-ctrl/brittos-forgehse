@@ -23,15 +23,23 @@ export const STUDIO_KIND_LABELS: Record<StudioKind, string> = {
 };
 
 export const DOCUMENT_TYPES = [
-  'toolbox_talk', 'method_statement', 'risk_assessment', 'safe_work_procedure', 'emergency_response_plan',
-  'inspection_report', 'incident_report', 'hse_plan_section', 'training_handout', 'other',
+  'risk_assessment','jsa_jha','method_statement','project_hse_plan','emergency_response_plan','work_method_plan',
+  'logistics_plan','traffic_management_plan','safe_work_procedure','hse_policy','qhse_policy','environmental_management_plan',
+  'inspection_checklist','toolbox_talk','training_material','hse_audit_report','incident_investigation_report',
+  'hse_closeout_handover_report','inspection_report','incident_report','hse_plan_section','training_handout','other',
 ] as const;
 export type DocumentType = (typeof DOCUMENT_TYPES)[number];
 export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
-  toolbox_talk: 'Toolbox talk', method_statement: 'Method statement', risk_assessment: 'Risk assessment',
-  safe_work_procedure: 'Safe work procedure', emergency_response_plan: 'Emergency response plan',
-  inspection_report: 'Inspection report', incident_report: 'Incident report', hse_plan_section: 'HSE plan section',
-  training_handout: 'Training handout', other: 'HSE document',
+  risk_assessment:'Risk Assessment (RA)', jsa_jha:'Job Safety / Hazard Analysis (JSA/JHA)',
+  method_statement:'Method Statement (MS)', project_hse_plan:'Project HSE Plan',
+  emergency_response_plan:'Emergency Response Plan (ERP)', work_method_plan:'Work Method Plan (WMP)',
+  logistics_plan:'Logistics Plan', traffic_management_plan:'Traffic Management Plan (TMP)',
+  safe_work_procedure:'Safe Work Procedure', hse_policy:'HSE Policy', qhse_policy:'QHSE Policy',
+  environmental_management_plan:'Environmental Management Plan', inspection_checklist:'Inspection Checklist',
+  toolbox_talk:'Toolbox Talk Materials', training_material:'Training Materials', hse_audit_report:'HSE Audit Report',
+  incident_investigation_report:'Incident Investigation Report', hse_closeout_handover_report:'HSE Closeout & Handover Report',
+  inspection_report:'Inspection Report', incident_report:'Incident Report', hse_plan_section:'HSE Plan Section',
+  training_handout:'Training Handout', other:'Other HSE Document',
 };
 
 const line = (max: number) => z.string().trim().min(1).max(max);
