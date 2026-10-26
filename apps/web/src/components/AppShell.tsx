@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Brand } from './brand';
 import { Icon } from './ui';
+import { HseIcon } from './graphics';
+import type { PosterIcon } from '@forgehse/shared';
 import { CommandPalette } from './CommandPalette';
 import { Link, useLocation } from '../lib/router';
 import { useAuth } from '../lib/auth';
@@ -33,9 +35,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => { setOpen(false); }, [path]);
 
-  const item = (to: string, icon: string, label: string, exact = false) => {
+  const item = (to: string, icon: string, label: string, exact = false, hse?: PosterIcon) => {
     const active = exact ? path === to : path === to || path.startsWith(to + '/');
-    return <Link to={to} aria-current={active ? 'page' : undefined}><Icon name={icon} />{label}</Link>;
+    return <Link to={to} aria-current={active ? 'page' : undefined}>{hse ? <HseIcon name={hse} size={18} strokeWidth={4} /> : <Icon name={icon} />}{label}</Link>;
   };
   const primaryRole = me?.assignments[0]?.roleLabel ?? '';
   const studioActive = path === '/app/studio' || (path.startsWith('/app/studio/') && !path.startsWith('/app/studio/library') && !path.startsWith('/app/studio/items'));
@@ -51,15 +53,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="nav-group">Overview</div>
           {can('dashboard.view') && item('/app', 'dashboard', 'Command centre', true)}
           <div className="nav-group">Field</div>
-          {can('observation.view') && item('/app/observations', 'eye', 'Observations')}
-          {can('observation.create') && item('/app/report', 'plus', 'Report observation')}
+          {can('observation.view') && item('/app/observations', 'eye', 'Observations', false, 'eye')}
+          {can('observation.create') && item('/app/report', 'plus', 'Report observation', false, 'warning')}
           <div className="nav-group">Insights</div>
           {item('/app/studio/library', 'library', 'Studio library')}
           {can('ai.use') && item('/app/assistant', 'review', 'Classic assistant')}
           {(can('project.manage') || can('user.manage') || can('audit.view') || can('ai.usage.view')) && <div className="nav-group">Administration</div>}
           {can('project.manage') && item('/app/admin/projects', 'folder', 'Projects & sites')}
-          {can('user.manage') && item('/app/admin/users', 'users', 'Users & roles')}
-          {can('audit.view') && item('/app/audit', 'shield', 'Audit trail')}
+          {can('user.manage') && item('/app/admin/users', 'users', 'Users & roles', false, 'people')}
+          {can('audit.view') && item('/app/audit', 'shield', 'Audit trail', false, 'shield_check')}
           {can('ai.usage.view') && item('/app/ai-usage', 'chart', 'AI usage')}
         </nav>
         <div className="rail-foot">

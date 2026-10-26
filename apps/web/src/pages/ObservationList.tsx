@@ -80,6 +80,10 @@ export function ObservationList() {
             Assigned to me
           </label>
           {(f.likelihood || f.severity) && <button className="btn btn-sm" onClick={() => setQuery({ likelihood: undefined, severity: undefined })}>Risk cell L{f.likelihood} × S{f.severity}<Icon name="x" size={14} /></button>}
+          {f.riskScore && <button className="btn btn-sm" onClick={() => setQuery({ riskScore: undefined, page: undefined })}>Risk score {f.riskScore}<Icon name="x" size={14} /></button>}
+          {f.hazardCategory && <button className="btn btn-sm" onClick={() => setQuery({ hazardCategory: undefined, page: undefined })}>Hazard: {f.hazardCategory}<Icon name="x" size={14} /></button>}
+          {f.assigneeId && <button className="btn btn-sm" onClick={() => setQuery({ assigneeId: undefined, page: undefined })}>Owner: {data?.items[0]?.assigneeName ?? 'selected'}<Icon name="x" size={14} /></button>}
+          {(f.from || f.to) && <button className="btn btn-sm" onClick={() => setQuery({ from: undefined, to: undefined, page: undefined })}>{f.from ?? '…'} → {f.to ?? '…'}<Icon name="x" size={14} /></button>}
           <span className="spacer" />
           {filtered && <button className="btn btn-sm btn-ghost" onClick={() => navigate('/app/observations', { replace: true })}>Clear filters</button>}
         </div>

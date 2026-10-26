@@ -7,7 +7,8 @@ import { Link } from '../lib/router';
 import { fmtDate, todayISO } from '../lib/format';
 import { PageHead } from '../components/AppShell';
 import { Loading, ErrorNotice, Empty, RiskChip, StatusBadge } from '../components/ui';
-import { RiskMatrix, TrendChart, BarList } from '../components/charts';
+import { RiskMatrix, TrendChart, BarList, RiskHistogram } from '../components/charts';
+import { Blueprint, HseIcon } from '../components/graphics';
 import { LightField, CountUp, Reveal } from '../components/fx';
 import { Icon } from '../components/ui';
 import { navigate } from '../lib/router';
@@ -37,8 +38,18 @@ export function Dashboard() {
   const listLink = (extra: Record<string, string>) => '/app/observations?' + new URLSearchParams({ ...(projectId ? { projectId } : {}), ...extra }).toString();
 
   const k = data?.kpis ?? {};
+  const firstName = me?.user.fullName.split(' ')[0] ?? '';
   return (
     <>
+      <section className="hero-band" aria-label="Command centre">
+        <Blueprint seed={11} nodes={18} />
+        <span className="eyebrow">BRITTO'S FORGEHSE · HSE intelligence</span>
+        <h1>{firstName ? `Welcome back, ${firstName}.` : 'Command centre'}</h1>
+        <p>Live picture of observations, open risk and overdue actions across {projectId ? (me?.projects.find((p) => p.id === projectId)?.name ?? 'this project') : 'all your authorised projects'}. Every figure opens the records behind it.</p>
+        <div className="hse-pillars" aria-hidden>
+          <span><HseIcon name="first_aid" size={18} />Health</span><span><HseIcon name="hard_hat" size={18} />Safety</span><span><HseIcon name="leaf" size={18} />Environment</span>
+        </div>
+      </section>
       <PageHead
         title="Command centre"
         sub={data ? `${fmtDate(data.period.from)} to ${fmtDate(data.period.to)}, ${data.period.timezone}` : undefined}
@@ -82,19 +93,18 @@ export function Dashboard() {
       {data && (
         <>
           <section className="kpi-strip panel-eng" aria-label="Key indicators">
-            <Link className="kpi" to={listLink({ from, to: todayISO() })}><div className="value"><CountUp value={k.reported as number | null} /></div><span className="label">Reported in period</span><div className="sub">{k.unsafeActs} acts, {k.unsafeConditions} conditions</div></Link>
-            <Link className="kpi" to={listLink({ status: 'active' })}><div className="value"><CountUp value={k.openNow as number | null} /></div><span className="label">Open now</span><div className="sub">{k.unassignedNow} not yet assigned</div></Link>
-            <Link className={`kpi ${Number(k.overdueNow) > 0 ? 'alert' : ''}`} to={listLink({ status: 'overdue' })}><div className="value"><CountUp value={k.overdueNow as number | null} /></div><span className="label">Overdue actions</span><div className="sub">Past due date, not submitted</div></Link>
-            <Link className="kpi" to={listLink({ status: 'action_submitted' })}><div className="value"><CountUp value={k.awaitingVerification as number | null} /></div><span className="label">Awaiting verification</span><div className="sub">Action submitted</div></Link>
-            <div className="kpi"><div className="value"><CountUp value={k.highCriticalOpen as number | null} /></div><span className="label">High or critical, open</span><div className="sub">Current risk rating</div></div>
-            <div className="kpi"><div className="value"><CountUp value={k.onTimeClosureRate as number | null} suffix="%" /></div><span className="label">Closed on time</span><div className="sub">{k.closedInPeriod} closed{k.avgDaysToClose !== null ? `, avg ${k.avgDaysToClose} days` : ''}</div></div>
+            <Link className="kpi" to={listLink({ from, to: todayISO() })}><div className="kpi-top"><div className="value"><CountUp value={k.reported as number | null} /></div><span className="hse-ico" aria-hidden><HseIcon name="eye" size={19} /></span></div><span className="label">Reported in period</span><div className="sub">{k.unsafeActs} acts, {k.unsafeConditions} conditions</div></Link>
+            <Link className="kpi" to={listLink({ status: 'active' })}><div className="kpi-top"><div className="value"><CountUp value={k.openNow as number | null} /></div><span className="hse-ico" aria-hidden><HseIcon name="warning" size={19} /></span></div><span className="label">Open now</span><div className="sub">{k.unassignedNow} not yet assigned</div></Link>
+            <Link className={`kpi ${Number(k.overdueNow) > 0 ? 'alert' : ''}`} to={listLink({ status: 'overdue' })}><div className="kpi-top"><div className="value"><CountUp value={k.overdueNow as number | null} /></div><span className="hse-ico alert" aria-hidden><HseIcon name="heat" size={19} /></span></div><span className="label">Overdue actions</span><div className="sub">Past due date, not submitted</div></Link>
+            <Link className="kpi" to={listLink({ status: 'action_submitted' })}><div className="kpi-top"><div className="value"><CountUp value={k.awaitingVerification as number | null} /></div><span className="hse-ico teal" aria-hidden><HseIcon name="shield_check" size={19} /></span></div><span className="label">Awaiting verification</span><div className="sub">Action submitted</div></Link>
+            <div className="kpi"><div className="kpi-top"><div className="value"><CountUp value={k.highCriticalOpen as number | null} /></div><span className="hse-ico" aria-hidden><HseIcon name="stop_hand" size={19} /></span></div><span className="label">High or critical, open</span><div className="sub">Current risk rating · see histogram</div></div>
+            <div className="kpi"><div className="kpi-top"><div className="value"><CountUp value={k.onTimeClosureRate as number | null} suffix="%" /></div><span className="hse-ico teal" aria-hidden><HseIcon name="shield_check" size={19} /></span></div><span className="label">Closed on time</span><div className="sub">{k.closedInPeriod} closed{k.avgDaysToClose !== null ? `, avg ${k.avgDaysToClose} days` : ''}</div></div>
           </section>
 
           <div className="dash-grid">
             <section className="panel">
-              <div className="panel-head"><h2>Reported and closed per week</h2><span className="spacer" />
-                <span className="legend"><span><i style={{ background: 'var(--navy)' }} />Reported</span><span><i style={{ background: 'var(--teal)' }} />Closed</span></span></div>
-              <div className="panel-body">{data.trend.some((t) => t.reported || t.closed) ? <TrendChart data={data.trend} /> : <Empty title="No observations in this period" />}</div>
+              <div className="panel-head"><h2>Reported and closed per week</h2><span className="spacer" /><span className="small muted">Select a week to open its records</span></div>
+              <div className="panel-body">{data.trend.some((t) => t.reported || t.closed) ? <TrendChart data={data.trend} onSelectWeek={(f, t) => navigate(listLink({ from: f, to: t }))} /> : <Empty title="No observations in this period" />}</div>
             </section>
             <section className="panel panel-eng">
               <div className="panel-head"><h2>Open risk</h2><span className="spacer" /><span className="small muted">Select a cell to see the items</span></div>
@@ -103,6 +113,11 @@ export function Dashboard() {
               </div>
             </section>
           </div>
+
+          <section className="panel" style={{ marginBottom: 20 }}>
+            <div className="panel-head"><h2>Open items by risk score</h2><span className="spacer" /><span className="small muted">Histogram · select a column to open its records</span></div>
+            <div className="panel-body">{data.openRiskMatrix.cells.some((c) => c.count) ? <RiskHistogram {...data.openRiskMatrix} href={(score) => listLink({ status: 'active', riskScore: String(score) })} /> : <Empty title="No open items">Nothing is waiting for action in this scope.</Empty>}</div>
+          </section>
 
           <div className="dash-grid">
             <section className="panel">
@@ -121,7 +136,7 @@ export function Dashboard() {
             </section>
             <section className="panel">
               <div className="panel-head"><h2>Top hazard categories</h2></div>
-              <div className="panel-body">{data.byHazard.length ? <BarList items={data.byHazard.map((h) => ({ label: h.category, value: h.count }))} /> : <Empty title="No data for this period" />}</div>
+              <div className="panel-body">{data.byHazard.length ? <BarList items={data.byHazard.map((h) => ({ label: h.category, value: h.count, href: listLink({ hazardCategory: h.category, from, to: todayISO() }) }))} /> : <Empty title="No data for this period" />}</div>
             </section>
           </div>
 
@@ -132,7 +147,7 @@ export function Dashboard() {
                 <div className="table-wrap"><table className="data">
                   <thead><tr><th>Project</th><th>Site</th><th>Reported (period)</th><th>Open</th><th>Overdue</th></tr></thead>
                   <tbody>{data.bySite.map((s) => (
-                    <tr key={s.id}><td>{s.projectCode}</td><td>{s.siteName}</td><td className="num">{s.reported}</td><td className="num">{s.open}</td>
+                    <tr key={s.id} className="row-link" onClick={() => navigate(listLink({ siteId: s.id, status: 'active' }))}><td>{s.projectCode}</td><td><Link to={listLink({ siteId: s.id, status: 'active' })} onClick={(e) => e.stopPropagation()}>{s.siteName}</Link></td><td className="num">{s.reported}</td><td className="num">{s.open}</td>
                       <td className="num" style={{ color: s.overdue ? 'var(--critical)' : undefined }}>{s.overdue}</td></tr>))}</tbody>
                 </table></div>
               )}
@@ -142,7 +157,7 @@ export function Dashboard() {
               {data.overdueByAssignee.length === 0 ? <Empty title="Nothing overdue" /> : (
                 <div className="table-wrap"><table className="data">
                   <thead><tr><th>Owner</th><th>Overdue</th><th>Oldest due</th></tr></thead>
-                  <tbody>{data.overdueByAssignee.map((a) => <tr key={a.id}><td>{a.name}</td><td className="num">{a.overdue}</td><td className="num">{fmtDate(a.oldestDue)}</td></tr>)}</tbody>
+                  <tbody>{data.overdueByAssignee.map((a) => <tr key={a.id}><td><Link to={listLink({ assigneeId: a.id, status: 'overdue' })}>{a.name}</Link></td><td className="num">{a.overdue}</td><td className="num">{fmtDate(a.oldestDue)}</td></tr>)}</tbody>
                 </table></div>
               )}
             </section>

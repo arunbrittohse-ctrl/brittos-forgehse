@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { STATUS_LABELS, type ObservationStatus, type RiskBand } from '@forgehse/shared';
 import { ApiError } from '../lib/api';
+import { NodeRing } from './graphics';
 
 /* ---------------------------------------------------------------- icons (stroke, 20px grid) */
 const PATHS: Record<string, string> = {
@@ -68,7 +69,7 @@ export function RiskChip({ band, score }: { band: RiskBand; score?: number }) {
 
 /* ---------------------------------------------------------------- feedback */
 export function Loading({ label = 'Loading' }: { label?: string }) {
-  return <div className="loading" role="status"><span className="spinner" aria-hidden />{label}…</div>;
+  return <div className="loading" role="status"><NodeRing />{label}…</div>;
 }
 export function ErrorNotice({ error, retry }: { error: unknown; retry?: () => void }) {
   const msg = error instanceof ApiError ? error.message : 'Something went wrong while loading this page.';

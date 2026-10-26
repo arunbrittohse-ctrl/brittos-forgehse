@@ -69,6 +69,9 @@ export async function listObservations(db: Db, auth: AuthContext, f: Observation
   if (f.assignedToMe) add('o.assignee_id = ?', auth.userId);
   if (f.likelihood) add('o.likelihood = ?', f.likelihood);
   if (f.severity) add('o.severity = ?', f.severity);
+  if (f.riskScore) add('o.risk_score = ?', f.riskScore);
+  if (f.hazardCategory) add('o.hazard_category = ?', f.hazardCategory);
+  if (f.assigneeId) add('o.assignee_id = ?', f.assigneeId);
   if (f.from) add('o.observed_at >= ?::date', f.from);
   if (f.to) add("o.observed_at < (?::date + interval '1 day')", f.to);
   if (f.q) add("(o.ref_no ILIKE ? OR o.description ILIKE $X OR o.location ILIKE $X)".replace(/\$X/g, `$${params.length + 1}`), `%${f.q.replace(/[%_\\]/g, '\\$&')}%`);

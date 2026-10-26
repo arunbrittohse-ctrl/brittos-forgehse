@@ -181,3 +181,21 @@ See [DEPLOYMENT.md](DEPLOYMENT.md), sections 2 and 7.
 3. Set an Anthropic key on staging, verify pricing, and review real cache hit rates on the AI usage page.
 4. Build **Incidents & Near Misses** next, reusing the workflow, audit, numbering, attachment and export services.
 5. Add notifications (email first) with delivery confirmation, then the scheduled weekly and monthly reports.
+
+---
+
+# v0.3 increment — premium visual layer and interactive analytics (26 October 2026)
+
+Recorded on the same rule: only what was built and executed here.
+
+| Area | Delivered |
+|---|---|
+| Typography | Manrope adopted (self-hosted woff2, 400–800, SIL OFL, `public/fonts/LICENSE-Manrope.txt`); Inter kept as fallback. No external font requests, CSP unchanged |
+| Corporate graphics | `components/graphics.tsx`: deterministic blueprint grid + connected-node network (pure SVG, aria-hidden, pulse disabled under reduced motion) on the sign-in panel and a new command-centre hero band; node-ring loading indicator |
+| HSE icons | The shared 33-icon HSE line family (`packages/shared/src/hse-icons.ts`) now used in navigation, KPI cards and Health / Safety / Environment pillars |
+| Interactive analytics | Weekly chart: animated entry, series toggles, hover/keyboard tooltip, select a week → its records. New risk-score histogram (bands from the tenant matrix) → records with that score. Hazard bars, site rows and overdue owners link to filtered registers. Filter chips on the register show and clear each drill-down |
+| API | `GET /api/observations` accepts `riskScore`, `hazardCategory`, `assigneeId` (validated, scope-filtered; cannot widen access) |
+
+Tests executed: shared 26/26 · web unit 7/7 · API 70/70 (one new drill-down/isolation test) · mobile queue 9/9 · strict `tsc` on shared, API and web **with real @types/react** (no offline shim) · browser e2e 18/18 against the mock AI · visual check of sign-in, light/dark dashboard, tooltip and drill-downs.
+
+Still not done: incident reporting, inspection checklists and CAPA notifications (modules not built); final logo; real Claude, Android device and penetration testing as listed above.

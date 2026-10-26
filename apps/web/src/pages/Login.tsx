@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Brand, TAGLINE } from '../components/brand';
 import { Field } from '../components/ui';
 import { LightField } from '../components/fx';
+import { Blueprint, HseIcon } from '../components/graphics';
 import { api, ApiError } from '../lib/api';
 import { navigate, useLocation, Link } from '../lib/router';
 import { useAuth } from '../lib/auth';
@@ -33,10 +34,14 @@ export function Login() {
     <div className="auth-page">
       <aside className="auth-side has-lightfield">
         <LightField />
+        <Blueprint seed={3} nodes={20} />
         <Link to="/" aria-label="Home"><Brand /></Link>
         <div>
           <h1 style={{ color: '#fff', fontSize: '2.2rem', letterSpacing: '-0.03em', maxWidth: '14ch' }}>Site safety, one record at a time.</h1>
           <p className="tag" style={{ marginTop: 14 }}>{TAGLINE}</p>
+          <div className="auth-pillars" aria-label="Health, safety and environment">
+            <span><HseIcon name="first_aid" size={20} />Health</span><span><HseIcon name="hard_hat" size={20} />Safety</span><span><HseIcon name="leaf" size={20} />Environment</span>
+          </div>
         </div>
         <p className="small" style={{ color: '#8f9bb8' }}>Access is limited to authorised users. Activity is logged.</p>
       </aside>

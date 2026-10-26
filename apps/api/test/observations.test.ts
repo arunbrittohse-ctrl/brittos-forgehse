@@ -172,6 +172,21 @@ describe('observations: workflow, RBAC and tenant isolation', () => {
     assert.equal(dash.data.modules.incidents.available, false, 'unbuilt modules are reported as unavailable, not zero');
   });
 
+  it('filters the register by risk score, hazard category and owner for chart drill-down', async () => {
+    const o = (await eng.post('/api/observations', observationInput(w, { likelihood: 3, severity: 3 }))).data;
+    await eng.post(`/api/observations/${o.id}/transitions`, { transition: 'assign', version: 1, assigneeId: w.users.supA1x, dueDate: today(3) });
+    const byScore = (await eng.get('/api/observations?riskScore=9&pageSize=200')).data.items as { id: string; riskScore: number }[];
+    assert.ok(byScore.some((x) => x.id === o.id) && byScore.every((x) => x.riskScore === 9));
+    const byHazard = (await eng.get(`/api/observations?hazardCategory=${encodeURIComponent('Work at height')}&pageSize=200`)).data.items as { hazardCategory: string }[];
+    assert.ok(byHazard.length > 0 && byHazard.every((x) => x.hazardCategory === 'Work at height'));
+    assert.equal((await eng.get(`/api/observations?hazardCategory=${encodeURIComponent('No such hazard')}`)).data.total, 0);
+    const byOwner = (await eng.get(`/api/observations?assigneeId=${w.users.supA1x}&pageSize=200`)).data.items as { id: string; assigneeId: string }[];
+    assert.ok(byOwner.some((x) => x.id === o.id) && byOwner.every((x) => x.assigneeId === w.users.supA1x));
+    assert.equal((await eng.get('/api/observations?assigneeId=not-a-uuid')).status, 400);
+    // A filter never widens scope: another organisation's engineer sees nothing for the same owner.
+    assert.equal((await engB.get(`/api/observations?assigneeId=${w.users.supA1x}`)).data.total, 0);
+  });
+
   it('accepts image evidence by magic bytes, rejects other types, and scopes downloads', async () => {
     const o = (await supX.post('/api/observations', observationInput(w))).data;
     const up = await supX.req('POST', `/api/observations/${o.id}/attachments?filename=edge.png`, PNG, { 'content-type': 'image/png' });
