@@ -52,9 +52,15 @@ function buildDocument(v: z.infer<typeof inputSchema>): HseDocument {
       activity: v.activity || '[TASK STEP TO DEFINE]',
       hazard: v.hazards.join(', ') || '[HAZARD TO IDENTIFY]',
       consequence: 'Injury, ill health, asset damage or environmental harm depending on exposure.',
-      likelihood: 3, severity: 3,
+      peopleExposed: '[WORKFORCE, CONTRACTORS, VISITORS AND ASSETS TO CONFIRM]',
+      likelihood: 3, severity: 3, initialRiskScore: 9,
+      initialRiskLevel: 'Illustrative only — classify using the approved matrix',
       controls: ['Elimination / substitution: assess whether the hazard can be removed.', 'Engineering: provide suitable physical barriers or engineered controls where applicable.', 'Administrative: approved procedure, permit, competent supervision and pre-task briefing.', 'PPE: task-specific PPE confirmed by the competent person.'],
-      residualLikelihood: 2, residualSeverity: 2,
+      additionalControls: ['Define activity-specific controls after site assessment and competent review.'],
+      controlOwner: '[RESPONSIBLE PERSON TO BE ASSIGNED]',
+      residualLikelihood: 2, residualSeverity: 2, residualRiskScore: 4,
+      residualRiskLevel: 'Illustrative only — classify using the approved matrix',
+      verificationRequirements: ['Supervisor verifies controls before work and after any change.', 'Retain inspection, permit, isolation and briefing evidence as applicable.'],
     }]
     : [];
   return documentSchema.parse({ docType: v.docType, title: v.title, purpose: `Controlled ${DOCUMENT_TYPE_LABELS[v.docType]} draft for ${project}.`, scope: v.scope || 'Scope requires confirmation before issue.', sections, responsibilities: [{ role: 'Project Manager', duties: 'Provide resources, coordinate interfaces and ensure the approved document is implemented.' }, { role: 'HSE Manager / Engineer', duties: 'Review risk controls, verify applicable requirements and record review comments.' }, { role: 'Activity Supervisor', duties: 'Brief the workforce, verify prerequisites and monitor the work.' }], riskTable, reviewNotes: ['Confirm project/site/client particulars and all bracketed placeholders.', 'Confirm authority and client requirements against supplied controlled sources; no legal citations have been inferred.', 'Confirm the approved risk matrix, risk bands and scoring convention. Scores shown are illustrative template values, not an approved assessment.', 'Complete competent-person review and formal approval before use.'] });
