@@ -65,11 +65,19 @@ export const riskRowSchema = z.object({
   activity: line(160),
   hazard: line(200),
   consequence: line(200),
+  peopleExposed: z.string().trim().max(300).default('[PEOPLE / ASSETS EXPOSED TO BE CONFIRMED]'),
   likelihood: z.number().int().min(1).max(10),
   severity: z.number().int().min(1).max(10),
+  initialRiskScore: z.number().int().min(1).max(100).optional(),
+  initialRiskLevel: z.string().trim().max(40).default('To be classified using the approved matrix'),
   controls: z.array(line(240)).min(1).max(8).describe('Controls in hierarchy order, each starting with its level, e.g. "Engineering: ..."'),
+  additionalControls: z.array(line(240)).max(8).default([]),
+  controlOwner: z.string().trim().max(120).default('[RESPONSIBLE CONTROL OWNER TO CONFIRM]'),
   residualLikelihood: z.number().int().min(1).max(10),
   residualSeverity: z.number().int().min(1).max(10),
+  residualRiskScore: z.number().int().min(1).max(100).optional(),
+  residualRiskLevel: z.string().trim().max(40).default('To be classified using the approved matrix'),
+  verificationRequirements: z.array(line(240)).max(8).default([]),
 });
 export type RiskRow = z.output<typeof riskRowSchema>;
 
