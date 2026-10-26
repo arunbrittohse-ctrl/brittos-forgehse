@@ -52,16 +52,28 @@ export function AppShell({ children }: { children: ReactNode }) {
           {can('ai.use') && <Link to="/app/studio" className="nav-ai" aria-current={studioActive ? 'page' : undefined}><Icon name="spark" />AI Studio<span className="kbd">{isMac ? '⌘' : 'Ctrl'} K</span></Link>}
           <div className="nav-group">Overview</div>
           {can('dashboard.view') && item('/app', 'dashboard', 'Command centre', true)}
-          <div className="nav-group">Field</div>
+          <div className="nav-group">HSE operations</div>
           {can('observation.view') && item('/app/observations', 'eye', 'Observations', false, 'eye')}
           {can('observation.create') && item('/app/report', 'plus', 'Report observation', false, 'warning')}
+          {item('/app/risk-assessments', 'shield', 'Risk assessments')}
+          {item('/app/permits', 'checklist', 'Permits to Work')}
+          {item('/app/inspections-audits', 'clipboard', 'Inspections & audits')}
+          {item('/app/incidents', 'warning', 'Incidents & near misses')}
+          {item('/app/actions', 'checklist', 'HSE actions')}
+          {item('/app/training', 'book', 'Training & competency')}
+          {item('/app/contractors', 'users', 'Contractors')}
+          {item('/app/environmental-health', 'leaf', 'Environmental & health')}
+          {item('/app/emergency', 'first-aid', 'Emergency readiness')}
+          {item('/app/documents', 'doc', 'Controlled documents')}
           <div className="nav-group">Insights</div>
+          {item('/app/analytics', 'chart', 'Analytics & reports')}
           {item('/app/studio/library', 'library', 'Studio library')}
           {can('ai.use') && item('/app/assistant', 'review', 'Classic assistant')}
           {(can('project.manage') || can('user.manage') || can('audit.view') || can('ai.usage.view')) && <div className="nav-group">Administration</div>}
           {can('project.manage') && item('/app/admin/projects', 'folder', 'Projects & sites')}
           {can('user.manage') && item('/app/admin/users', 'users', 'Users & roles', false, 'people')}
           {can('audit.view') && item('/app/audit', 'shield', 'Audit trail', false, 'shield_check')}
+          {item('/app/settings', 'settings', 'Administration & settings')}
           {can('ai.usage.view') && item('/app/ai-usage', 'chart', 'AI usage')}
         </nav>
         <div className="rail-foot">
