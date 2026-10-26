@@ -57,13 +57,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           {can('observation.create') && item('/app/report', 'plus', 'Report observation', false, 'warning')}
           {item('/app/risk-assessments', 'shield', 'Risk assessments')}
           {item('/app/permits', 'checklist', 'Permits to Work')}
-          {item('/app/inspections-audits', 'clipboard', 'Inspections & audits')}
-          {item('/app/incidents', 'warning', 'Incidents & near misses')}
+          {item('/app/inspections-audits', 'checklist', 'Inspections & audits')}
+          {item('/app/incidents', 'alert', 'Incidents & near misses')}
           {item('/app/actions', 'checklist', 'HSE actions')}
-          {item('/app/training', 'book', 'Training & competency')}
+          {item('/app/training', 'library', 'Training & competency')}
           {item('/app/contractors', 'users', 'Contractors')}
-          {item('/app/environmental-health', 'leaf', 'Environmental & health')}
-          {item('/app/emergency', 'first-aid', 'Emergency readiness')}
+          {item('/app/environmental-health', 'globe', 'Environmental & health')}
+          {item('/app/emergency', 'alert', 'Emergency readiness')}
           {item('/app/documents', 'doc', 'Controlled documents')}
           <div className="nav-group">Insights</div>
           {item('/app/analytics', 'chart', 'Analytics & reports')}
@@ -73,7 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {can('project.manage') && item('/app/admin/projects', 'folder', 'Projects & sites')}
           {can('user.manage') && item('/app/admin/users', 'users', 'Users & roles', false, 'people')}
           {can('audit.view') && item('/app/audit', 'shield', 'Audit trail', false, 'shield_check')}
-          {item('/app/settings', 'settings', 'Administration & settings')}
+          {item('/app/settings', 'user', 'Administration & settings')}
           {can('ai.usage.view') && item('/app/ai-usage', 'chart', 'AI usage')}
         </nav>
         <div className="rail-foot">
