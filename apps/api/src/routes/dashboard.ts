@@ -34,8 +34,8 @@ export function registerDashboardRoutes(r: Router, { db }: Deps) {
     const params: unknown[] = [];
     const where = [scopeFilter(auth, 'observation.view', params, { org: 'o.organization_id', project: 'o.project_id', site: 'o.site_id' })];
     if (q.projectId) { params.push(q.projectId); where.push(`o.project_id = $${params.length}`); }
-    if (q.siteId) { params.push(q.siteId); where.push(`o.site_id = ${params.length}`); }
-    if (q.status) { params.push(q.status); where.push(q.status === 'active' ? `o.status IN ('open','assigned','action_submitted')` : `o.status = ${params.length}`); }
+    if (q.siteId) { params.push(q.siteId); where.push(`o.site_id = $${params.length}`); }
+    if (q.status) { params.push(q.status); where.push(q.status === 'active' ? `o.status IN ('open','assigned','action_submitted')` : `o.status = $${params.length}`); }
     params.push(from, to, tz, today);
     const [pFrom, pTo, pTz, pToday] = [params.length - 3, params.length - 2, params.length - 1, params.length].map((n) => `$${n}`);
     const W = where.join(' AND ');
