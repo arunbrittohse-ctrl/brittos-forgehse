@@ -10,6 +10,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { HttpError } from '../http/core';
 import { STABLE_SYSTEM_PROMPT, estimateTokens, PROMPT_VERSION } from './prompts';
 import { estimateCost, type Pricing, type Usage, type CostBreakdown } from './pricing';
+import type { AiBackend, AiProviderId } from './providers/types';
 
 export interface ClaudeOptions {
   apiKey?: string;
@@ -21,7 +22,17 @@ export interface ClaudeOptions {
   pricing: Pricing;
   fetchImpl?: typeof fetch;
   maxRetries?: number;
+  /**
+   * Optional non-Anthropic backend (local rules engine or a self-hosted OpenAI-compatible model).
+   * When set, every call goes to it instead of the Anthropic API; prompts, tools, validation and
+   * review stay identical. `null` = AI switched off.
+   */
+  backend?: AiBackend | null;
 }
+
+export interface AiProviderInfo { id: AiProviderId; label: string; model: string; configured: boolean; deterministic: boolean; costed: boolean }
+
+export const NOT_CONFIGURED = 'The AI assistant is switched off on this server. Ask your administrator to set AI_PROVIDER (local, openai_compatible or anthropic).';
 
 export type CacheStatus = 'hit' | 'write' | 'miss' | 'not_requested' | 'error';
 type CacheControl = { type: 'ephemeral'; ttl?: '1h' };
@@ -69,8 +80,15 @@ export interface PreparedRequest { body: MessagesRequest; cacheRequested: boolea
 export class ClaudeService {
   constructor(private opts: ClaudeOptions) {}
 
-  get configured() { return Boolean(this.opts.apiKey); }
-  get model() { return this.opts.model; }
+  get configured() { return this.opts.backend === null ? false : this.opts.backend ? this.opts.backend.configured : Boolean(this.opts.apiKey); }
+  get model() { return this.opts.backend?.model ?? this.opts.model; }
+  /** Which provider answers, shown to users next to AI output so model and rules-based replies are never confused. */
+  get provider(): AiProviderInfo {
+    const b = this.opts.backend;
+    if (b === null) return { id: 'off', label: 'AI switched off', model: '', configured: false, deterministic: false, costed: false };
+    if (b) return { id: b.id, label: b.label, model: b.model, configured: b.configured, deterministic: b.deterministic, costed: false };
+    return { id: 'anthropic', label: `Claude (${this.opts.model})`, model: this.opts.model, configured: Boolean(this.opts.apiKey), deterministic: false, costed: true };
+  }
   get pricing() { return this.opts.pricing; }
   get cacheTtl() { return this.opts.cacheTtl; }
 
@@ -82,7 +100,7 @@ export class ClaudeService {
   prepare(parts: { messages: MessageParam[]; dynamicSystem?: string; tools?: ToolDef[]; toolChoice?: MessagesRequest['tool_choice']; maxTokens?: number }): PreparedRequest {
     const est = estimateTokens(STABLE_SYSTEM_PROMPT) + estimateTokens(JSON.stringify(parts.tools ?? []));
     const min = this.opts.pricing.models[this.opts.model]?.minCacheableTokens ?? 4096; // unknown model → conservative
-    const cacheRequested = est >= min;
+    const cacheRequested = !this.opts.backend && est >= min; // prompt caching is an Anthropic feature
     const system: TextBlock[] = [{ type: 'text', text: STABLE_SYSTEM_PROMPT }];
     if (cacheRequested) system[0]!.cache_control = this.cacheControl();
     if (parts.dynamicSystem) system.push({ type: 'text', text: parts.dynamicSystem });
@@ -106,6 +124,11 @@ export class ClaudeService {
   /** Non-streaming call. */
   async send(prep: PreparedRequest, signal?: AbortSignal): Promise<ClaudeCallResult> {
     const started = Date.now();
+    if (this.opts.backend !== undefined) {
+      const b = this.requireBackend();
+      const r = await b.send(prep.body, signal);
+      return this.result(prep, r.content, r.stopReason, r.usage, r.model, started);
+    }
     const res = await this.post(prep.body, signal, this.opts.timeoutMs);
     const data = (await res.json()) as { content?: ContentBlock[]; stop_reason?: string; usage?: Partial<Usage>; model?: string };
     return this.result(prep, data.content ?? [], data.stop_reason ?? null, data.usage ?? {}, data.model, started);
@@ -117,6 +140,11 @@ export class ClaudeService {
    */
   async stream(prep: PreparedRequest, onText: (t: string) => void, signal?: AbortSignal): Promise<ClaudeCallResult> {
     const started = Date.now();
+    if (this.opts.backend !== undefined) {
+      const b = this.requireBackend();
+      const r = await b.stream(prep.body, onText, signal);
+      return this.result(prep, r.content, r.stopReason, r.usage, r.model, started);
+    }
     const res = await this.post({ ...prep.body, stream: true }, signal, Math.max(this.opts.timeoutMs, 120_000));
     if (!res.body) throw new AiError(502, 'ai_upstream_error', 'The AI service returned an empty stream.');
     const blocks: (ContentBlock & { _json?: string })[] = [];
@@ -217,16 +245,23 @@ export class ClaudeService {
       stopReason,
       usage,
       cacheStatus,
-      cost: estimateCost(this.opts.pricing, this.opts.model, usage, this.opts.cacheTtl),
+      // Local and self-hosted backends have no per-token price: cost is reported as not applicable.
+      cost: this.opts.backend !== undefined ? { estimatedUsd: null, uncachedUsd: null, cacheWrite5m: 0, cacheWrite1h: 0 } : estimateCost(this.opts.pricing, this.opts.model, usage, this.opts.cacheTtl),
       latencyMs: Date.now() - started,
-      model: model ?? this.opts.model,
+      model: model ?? this.model,
       stablePrefixTokensEst: prep.stablePrefixTokensEst,
     };
   }
 
+  private requireBackend(): AiBackend {
+    const b = this.opts.backend;
+    if (!b || !b.configured) throw new AiError(503, 'ai_not_configured', NOT_CONFIGURED);
+    return b;
+  }
+
   /** POST with timeout, retry on transient failures (before any response is consumed) and error mapping. */
   private async post(body: MessagesRequest, signal: AbortSignal | undefined, timeoutMs: number): Promise<Response> {
-    if (!this.opts.apiKey) throw new AiError(503, 'ai_not_configured', 'The AI assistant is not configured on this server. Ask your administrator to set ANTHROPIC_API_KEY.');
+    if (!this.opts.apiKey) throw new AiError(503, 'ai_not_configured', NOT_CONFIGURED);
     const doFetch = this.opts.fetchImpl ?? fetch;
     const maxRetries = this.opts.maxRetries ?? 2;
     for (let attempt = 0; ; attempt++) {

@@ -1,3 +1,4 @@
+import type { AiBackend } from '../src/ai/providers/types';
 import type { AddressInfo } from 'node:net';
 import type http from 'node:http';
 import { createDb, type Db } from '../src/db/db';
@@ -33,7 +34,7 @@ export interface TestApp {
   close(): Promise<void>;
 }
 
-export async function startApp(db: Db, opts: { apiKey?: string; fetchImpl?: FakeFetch; model?: string; pricing?: Pricing; ttl?: '5m' | '1h'; timeoutMs?: number } = {}): Promise<TestApp> {
+export async function startApp(db: Db, opts: { apiKey?: string; fetchImpl?: FakeFetch; model?: string; pricing?: Pricing; ttl?: '5m' | '1h'; timeoutMs?: number; backend?: AiBackend | null } = {}): Promise<TestApp> {
   const config = loadConfig({
     NODE_ENV: 'test', DATABASE_URL: TEST_DB_URL, CORS_ORIGINS: 'http://allowed.test', LOG_LEVEL: 'error',
     CLAUDE_MODEL: opts.model ?? 'claude-sonnet-5-5', CLAUDE_CACHE_TTL: opts.ttl ?? '5m',
@@ -41,7 +42,7 @@ export async function startApp(db: Db, opts: { apiKey?: string; fetchImpl?: Fake
   const ai = new ClaudeService({
     apiKey: opts.apiKey, baseUrl: 'https://api.anthropic.test', model: config.CLAUDE_MODEL, maxTokens: 1000,
     timeoutMs: opts.timeoutMs ?? 5000, cacheTtl: config.CLAUDE_CACHE_TTL, pricing: opts.pricing ?? DEFAULT_PRICING,
-    fetchImpl: opts.fetchImpl as typeof fetch | undefined, maxRetries: 1,
+    fetchImpl: opts.fetchImpl as typeof fetch | undefined, maxRetries: 1, backend: opts.backend,
   });
   const deps = buildDeps(config, db, {
     storage: new MemoryStorage(),

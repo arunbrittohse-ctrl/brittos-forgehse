@@ -28,7 +28,7 @@ import { orgSettings } from '../services/org';
 import { audit } from '../services/audit';
 import { compactParams } from '../db/db';
 import { buildContextBlock } from '../ai/prompts';
-import { AiError, type ContentBlock } from '../ai/claude';
+import { AiError, NOT_CONFIGURED, type ContentBlock } from '../ai/claude';
 import { recordUsage } from '../ai/usage';
 import { studioDocx, studioPdf, studioSvg, type ExportMeta } from '../services/studio-export';
 
@@ -129,7 +129,7 @@ export function registerStudioRoutes(r: Router, { db, ai, limiters, log, storage
     const body = studioGenerateSchema.parse(await ctx.json(z.unknown()));
     if (!hasAnywhere(auth, 'ai.use')) throw forbidden();
     if (body.projectId) requireProjectReach(auth, 'ai.use', body.projectId);
-    if (!ai.configured) throw new AiError(503, 'ai_not_configured', 'The AI assistant is not configured on this server. Ask your administrator to set ANTHROPIC_API_KEY.');
+    if (!ai.configured) throw new AiError(503, 'ai_not_configured', NOT_CONFIGURED);
     limiters.ai.check(`ai:${auth.userId}`);
     const kind = body.kind;
     if (kind === 'review' && !body.sourceId) throw badRequest('Upload the document to review first');
@@ -207,7 +207,7 @@ export function registerStudioRoutes(r: Router, { db, ai, limiters, log, storage
       return row.id;
     });
     const item = toItem(await loadItem(auth, id), auth);
-    return { status: 201, json: { item, meta: { model: result.model, cacheStatus: result.cacheStatus, latencyMs: result.latencyMs, disclaimer: 'AI-generated draft. A competent person must review it before use.' } } };
+    return { status: 201, json: { item, meta: { model: result.model, provider: ai.provider.id, providerLabel: ai.provider.label, cacheStatus: result.cacheStatus, latencyMs: result.latencyMs, disclaimer: ai.provider.deterministic ? 'Rules-based draft from the FORGEHSE local template library (no AI model). A competent person must review it before use.' : 'AI-generated draft. A competent person must review it before use.' } } };
   });
 
   r.get('/api/studio/items', async (ctx) => {

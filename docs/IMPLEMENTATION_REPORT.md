@@ -199,3 +199,19 @@ Recorded on the same rule: only what was built and executed here.
 Tests executed: shared 26/26 · web unit 7/7 · API 70/70 (one new drill-down/isolation test) · mobile queue 9/9 · strict `tsc` on shared, API and web **with real @types/react** (no offline shim) · browser e2e 18/18 against the mock AI · visual check of sign-in, light/dark dashboard, tooltip and drill-downs.
 
 Still not done: incident reporting, inspection checklists and CAPA notifications (modules not built); final logo; real Claude, Android device and penetration testing as listed above.
+
+---
+
+# Phase 1 — foundation (26 October 2026, branch `phase-1-foundation`)
+
+| Area | Delivered |
+|---|---|
+| Database driver | In-house `pgwire.ts` replaced by node-postgres (`pg`), behind the unchanged `Db` interface; value conventions kept identical (`db/types.ts`) |
+| AI without cost | Provider layer: `local` rules engine (deterministic, labelled "no AI model"), `openai_compatible` for self-hosted models (Ollama etc.), optional `anthropic`, `off`. Default `auto` = local unless a Claude key is set |
+| Domain model | `packages/shared/src/domains/`: registry of 13 domains with honest status, lifecycle engine (comment / evidence / independent-verifier rules), lifecycles and validated input schemas for documents, risk assessments/JSA, permits, inspections, incidents, CAPA, gaps, contractors, training, monitoring, drills |
+| Migration 0006 | 22 additive tables; database CHECKs enforce independent verification, owner+due date, authorised permits, tenant-consistent project/site keys, computed exceedances |
+| Configuration | `config/env/{development,test,production}.env.example`, AI options in `.env.example`, `docs/DEVELOPMENT_READINESS.md` |
+
+Verification executed: strict typecheck (shared/API/web) · builds · shared 33/33 · web 7/7 · API 90/90 · mobile 9/9 · browser e2e 18/18 with `AI_PROVIDER=local` and no mock server · route check (14 pages 200) · export content check (PDF/XLSX/CSV register and Studio DOCX/PDF contain the saved record text) · unauthorised-access probes · Netlify function bundle cold start on a fresh database (6 migrations, ready).
+
+Not done in Phase 1 (by design): APIs and screens for the new domains — they are `foundation` status only.

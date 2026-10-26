@@ -28,7 +28,7 @@ interface Turn { task: string; input: string; text?: string; error?: string; tru
 
 export function Assistant() {
   const { me } = useAuth();
-  const status = useAsync(() => api<{ configured: boolean; model: string }>('/ai/status'), []);
+  const status = useAsync(() => api<{ configured: boolean; model: string; provider?: { id: string; label: string; deterministic: boolean } }>('/ai/status'), []);
   const [task, setTask] = useState<'ask' | 'summarize_observations'>('ask');
   const [projectId, setProjectId] = useState('');
   const [input, setInput] = useState('');
@@ -51,7 +51,8 @@ export function Assistant() {
   return (
     <>
       <PageHead title="HSE assistant" sub="Ask HSE questions or get a management summary of recent observations. Answers are drafts for a competent person to check." />
-      {status.data && !status.data.configured && <div className="notice warn" style={{ marginBottom: 16 }}>The assistant is not configured on this server yet. An administrator needs to set the Claude API key.</div>}
+      {status.data && !status.data.configured && <div className="notice warn" style={{ marginBottom: 16 }}>The assistant is switched off on this server. An administrator can enable the free local rules engine (AI_PROVIDER=local), a self-hosted model, or Claude.</div>}
+      {status.data?.configured && status.data.provider?.deterministic && <div className="notice" role="note" style={{ marginBottom: 16 }}><strong>Local rules engine — no AI model.</strong> Replies are rules-based from the FORGEHSE guidance library and your records.</div>}
       <div className="detail-grid">
         <div className="stack">
           {turns.length === 0 && (

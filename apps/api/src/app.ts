@@ -4,6 +4,9 @@ import { Router, RateLimiter, createServer, createLogger, type Logger } from './
 import { resolveAuth } from './auth/session';
 import { LocalDiskStorage, PgStorage, type ObjectStorage } from './services/storage';
 import { ClaudeService } from './ai/claude';
+import { LocalRulesBackend } from './ai/providers/local/backend';
+import { OpenAiCompatibleBackend } from './ai/providers/openai-compatible';
+import type { AiBackend } from './ai/providers/types';
 import { loadPricing } from './ai/pricing';
 import { registerAuthRoutes } from './routes/auth';
 import { registerAdminRoutes } from './routes/admin';
@@ -30,6 +33,15 @@ export interface Deps {
   };
 }
 
+/** undefined = Anthropic, null = AI off, otherwise the free local or self-hosted backend. */
+export function selectBackend(config: Config): AiBackend | null | undefined {
+  const p = config.AI_PROVIDER === 'auto' ? (config.ANTHROPIC_API_KEY ? 'anthropic' : 'local') : config.AI_PROVIDER;
+  if (p === 'anthropic') return undefined;
+  if (p === 'off') return null;
+  if (p === 'local') return new LocalRulesBackend();
+  return new OpenAiCompatibleBackend({ baseUrl: config.LOCAL_AI_BASE_URL!, model: config.LOCAL_AI_MODEL!, apiKey: config.LOCAL_AI_API_KEY, timeoutMs: config.LOCAL_AI_TIMEOUT_MS });
+}
+
 export function buildDeps(config: Config, db: Db, overrides: Partial<Deps> = {}): Deps {
   const log = overrides.log ?? createLogger(config.LOG_LEVEL);
   return {
@@ -45,6 +57,7 @@ export function buildDeps(config: Config, db: Db, overrides: Partial<Deps> = {})
       timeoutMs: config.CLAUDE_TIMEOUT_MS,
       cacheTtl: config.CLAUDE_CACHE_TTL,
       pricing: loadPricing(config.AI_PRICING_FILE),
+      backend: selectBackend(config),
     }),
     limiters: overrides.limiters ?? {
       loginIp: new RateLimiter(30, 15 * 60_000),

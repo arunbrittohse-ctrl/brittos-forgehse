@@ -6,3 +6,6 @@ export * from './schemas';
 export * from './studio';
 export * from './hse-icons';
 export * from './render';
+export * from './domains/lifecycle';
+export * from './domains/hse';
+export * from './domains/registry';
