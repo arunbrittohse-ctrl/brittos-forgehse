@@ -22,6 +22,16 @@ const envSchema = z.object({
   MAX_UPLOAD_MB: z.coerce.number().min(1).max(50).default(15),
   /** Serve the built web app from this directory (optional, single-container deploys). */
   WEB_DIST_DIR: z.string().optional(),
+  /**
+   * Which AI backend answers. 'auto' (default): Claude when ANTHROPIC_API_KEY is set, otherwise the
+   * free local rules engine. 'local': rules engine only (no model, no cost). 'openai_compatible':
+   * a self-hosted open model such as Ollama (LOCAL_AI_BASE_URL + LOCAL_AI_MODEL). 'off': AI disabled.
+   */
+  AI_PROVIDER: z.enum(['auto', 'anthropic', 'local', 'openai_compatible', 'off']).default('auto'),
+  LOCAL_AI_BASE_URL: z.string().url().optional(),
+  LOCAL_AI_MODEL: z.string().optional(),
+  LOCAL_AI_API_KEY: z.string().optional(),
+  LOCAL_AI_TIMEOUT_MS: z.coerce.number().int().min(5000).max(600000).default(180000),
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_BASE_URL: z.string().url().default('https://api.anthropic.com'),
   CLAUDE_MODEL: z.string().default('claude-sonnet-5-5'),
@@ -47,6 +57,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   }
   if (parsed.data.NODE_ENV === 'production' && /^https?:\/\/(localhost|127\.|0\.0\.0\.0|\[::1\])/i.test(parsed.data.ANTHROPIC_BASE_URL)) {
     throw new Error('ANTHROPIC_BASE_URL points at a local address in production. The local mock AI server is for development and tests only.');
+  }
+  if (parsed.data.AI_PROVIDER === 'openai_compatible' && (!parsed.data.LOCAL_AI_BASE_URL || !parsed.data.LOCAL_AI_MODEL)) {
+    throw new Error('AI_PROVIDER=openai_compatible needs LOCAL_AI_BASE_URL (e.g. http://127.0.0.1:11434/v1 for Ollama) and LOCAL_AI_MODEL.');
+  }
+  if (parsed.data.AI_PROVIDER === 'anthropic' && !parsed.data.ANTHROPIC_API_KEY) {
+    throw new Error('AI_PROVIDER=anthropic needs ANTHROPIC_API_KEY. Use AI_PROVIDER=local for the free rules engine.');
   }
   return parsed.data;
 }

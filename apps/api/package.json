@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
-    "build": "esbuild src/server.ts src/cli/migrate.ts src/cli/seed.ts --bundle --platform=node --target=node22 --format=esm --outdir=dist --sourcemap --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\"",
+    "build": "esbuild src/server.ts src/cli/migrate.ts src/cli/seed.ts --bundle --platform=node --target=node22 --format=esm --outdir=dist --sourcemap --external:pg-native --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\"",
     "migrate": "tsx src/cli/migrate.ts up",
     "migrate:down": "tsx src/cli/migrate.ts down",
     "seed": "tsx src/cli/seed.ts",
@@ -15,13 +15,15 @@
   },
   "dependencies": {
     "@forgehse/shared": "*",
+    "docx": "^9.5.0",
     "jszip": "^3.10.1",
     "pdf-lib": "^1.17.1",
-    "zod": "^3.25.76",
-    "docx": "^9.5.0"
+    "pg": "^8.23.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": ">=22",
+    "@types/pg": "^8.23.1",
     "esbuild": ">=0.24.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0 || ^6.0.0"

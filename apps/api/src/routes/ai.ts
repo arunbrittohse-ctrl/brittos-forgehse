@@ -50,7 +50,7 @@ export function registerAiRoutes(r: Router, { db, ai, limiters, log }: Deps) {
 
   r.get('/api/ai/status', async (ctx) => {
     requireAuth(ctx);
-    return { json: { configured: ai.configured, model: ai.model } };
+    return { json: { configured: ai.configured, model: ai.model, provider: ai.provider } };
   });
 
   r.post('/api/ai/assist', async (ctx) => {
@@ -124,7 +124,7 @@ export function registerAiRoutes(r: Router, { db, ai, limiters, log }: Deps) {
     }
     await record(auth, body.task, result);
 
-    const meta = { model: result.model, cacheStatus: result.cacheStatus, disclaimer: 'AI-generated draft. Review and verify before use; it has not been saved or approved.' };
+    const meta = { model: result.model, provider: ai.provider.id, providerLabel: ai.provider.label, cacheStatus: result.cacheStatus, disclaimer: ai.provider.deterministic ? 'Rules-based draft from the FORGEHSE local library (no AI model). Review and verify before use; it has not been saved or approved.' : 'AI-generated draft. Review and verify before use; it has not been saved or approved.' };
     if (body.task === 'draft_observation') {
       const parsed = draftSchema.safeParse(extractJson(result.text));
       if (!parsed.success) throw new AiError(502, 'ai_bad_output', 'The AI reply was incomplete. Please try again.');

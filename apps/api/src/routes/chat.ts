@@ -17,7 +17,7 @@ import { forbidden, notFound, badRequest } from '../http/core';
 import { requireAuth, requireProjectReach, hasAnywhere, type AuthContext } from '../auth/session';
 import { orgSettings } from '../services/org';
 import { buildContextBlock } from '../ai/prompts';
-import { AiError, type ClaudeCallResult, type ContentBlock, type MessageParam, type ToolResultBlock } from '../ai/claude';
+import { AiError, NOT_CONFIGURED, type ClaudeCallResult, type ContentBlock, type MessageParam, type ToolResultBlock } from '../ai/claude';
 import { CHAT_TOOLS, searchObservations, hseStatistics, studioDraftInput, observationDraftInput, type Citation } from '../ai/tools';
 import { recordUsage } from '../ai/usage';
 
@@ -55,7 +55,7 @@ export function registerChatRoutes(r: Router, { db, ai, limiters, log }: Deps) {
     const auth = requireAuth(ctx);
     const body = await ctx.json(chatSchema);
     if (!hasAnywhere(auth, 'ai.use')) throw forbidden();
-    if (!ai.configured) throw new AiError(503, 'ai_not_configured', 'The AI assistant is not configured on this server. Ask your administrator to set ANTHROPIC_API_KEY.');
+    if (!ai.configured) throw new AiError(503, 'ai_not_configured', NOT_CONFIGURED);
     limiters.ai.check(`ai:${auth.userId}`);
     const streaming = ctx.query.stream !== '0';
 
@@ -154,8 +154,8 @@ export function registerChatRoutes(r: Router, { db, ai, limiters, log }: Deps) {
         [conv.id, 'assistant', text, JSON.stringify(cited), JSON.stringify(actions)])).rows[0]!;
       await db.query('UPDATE ai_conversations SET updated_at = now() WHERE id = $1', [conv.id]);
       send('done', {
-        messageId: msg.id, citations: cited, truncated: last?.stopReason === 'max_tokens', cacheStatus: last?.cacheStatus, model: last?.model,
-        usage: totals, disclaimer: 'AI-generated. Verify before relying on it; nothing has been saved, approved or submitted on your behalf.',
+        messageId: msg.id, citations: cited, truncated: last?.stopReason === 'max_tokens', cacheStatus: last?.cacheStatus, model: last?.model, provider: ai.provider.id, providerLabel: ai.provider.label,
+        usage: totals, disclaimer: ai.provider.deterministic ? 'Rules-based reply from the FORGEHSE local library (no AI model). Figures come from your records; nothing has been saved, approved or submitted on your behalf.' : 'AI-generated. Verify before relying on it; nothing has been saved, approved or submitted on your behalf.',
       });
       return { text, citations: cited, actions };
     };

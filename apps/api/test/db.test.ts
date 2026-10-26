@@ -1,8 +1,9 @@
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createDb, compactParams, parseDatabaseUrl } from '../src/db/db';
-import { serializeParam } from '../src/db/pgwire';
-import { migrateDown, migrateUp } from '../src/db/migrate';
+import { serializeParam } from '../src/db/types';
+import { readdirSync } from 'node:fs';
+import { migrateDown, migrateUp, MIGRATIONS_DIR } from '../src/db/migrate';
 import { TEST_DB_URL, freshDb } from './helpers';
 
 describe('database layer', () => {
@@ -55,9 +56,11 @@ describe('database layer', () => {
   it('migrations roll back and re-apply cleanly, and detect edited migrations', async () => {
     const fresh = await freshDb();
     try {
-      assert.equal(await migrateDown(fresh), '0005_object_store');
-      assert.equal(await migrateDown(fresh), '0004_studio_chat');
-      assert.deepEqual(await migrateUp(fresh), ['0004_studio_chat', '0005_object_store']);
+      const all = readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith('.up.sql')).map((f) => f.replace(/\.up\.sql$/, '')).sort();
+      const [prev, last] = all.slice(-2);
+      assert.equal(await migrateDown(fresh), last);
+      assert.equal(await migrateDown(fresh), prev);
+      assert.deepEqual(await migrateUp(fresh), [prev, last]);
     await fresh.query("UPDATE schema_migrations SET checksum = 'tampered' WHERE version = '0001_core'");
       await assert.rejects(migrateUp(fresh), /modified after it was applied/);
     } finally {

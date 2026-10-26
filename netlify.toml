@@ -9,7 +9,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = []
+  external_node_modules = ["pg-native"]
 
 # Single-page app: unknown paths load index.html (the /api/* function route takes priority).
 [[redirects]]

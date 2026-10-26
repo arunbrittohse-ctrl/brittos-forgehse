@@ -50,7 +50,7 @@ export function Studio() {
   const { me, can } = useAuth();
   const toast = useToast();
   const { search } = useLocation();
-  const status = useAsync(() => api<{ configured: boolean; model: string }>('/ai/status'), []);
+  const status = useAsync(() => api<{ configured: boolean; model: string; provider?: { id: string; label: string; deterministic: boolean } }>('/ai/status'), []);
   const [convTick, setConvTick] = useState(0);
   const convs = useAsync(() => api<{ items: { id: string; title: string; updatedAt: string }[] }>('/ai/conversations'), [convTick]);
   const [convId, setConvId] = useState<string | undefined>(search.get('c') ?? undefined);
@@ -234,7 +234,8 @@ export function Studio() {
                   <h1>Your HSE co-pilot — ask, speak, or create.</h1>
                   <p>Grounded in your organisation's live records, with references you can open. Generate checklists, toolbox talks, method statements, risk assessments, posters and flowcharts from one line — then review and export.</p>
                 </div>
-                {!configured && <div className="notice warn" style={{ marginBottom: 16 }}>AI is not configured on this server yet. An administrator needs to set the Claude API key; until then Studio can show your library but cannot answer or generate.</div>}
+                {!configured && <div className="notice warn" style={{ marginBottom: 16 }}>AI is switched off on this server. An administrator can enable the free local rules engine (AI_PROVIDER=local), a self-hosted model, or Claude; until then Studio can show your library but cannot answer or generate.</div>}
+                {configured && status.data?.provider?.deterministic && <div className="notice" role="note" style={{ marginBottom: 16 }}><strong>Local rules engine — no AI model.</strong> Answers and drafts come from the FORGEHSE guidance library and your live records. Every draft still needs review before use.</div>}
                 <div className="starter-grid">
                   {STARTERS.map((s) => (
                     <button key={s.title} className="starter" disabled={!configured} onClick={() => { setMode(s.mode); if (s.mode === 'document') setDocType(/toolbox/i.test(s.text) ? 'toolbox_talk' : 'method_statement'); void send(s.text, s.mode); }}>
