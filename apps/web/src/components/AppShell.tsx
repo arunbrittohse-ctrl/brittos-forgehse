@@ -50,6 +50,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Link to="/app" className="brand-link" aria-label="Command centre"><Brand /></Link>
         <nav className="nav">
           {can('ai.use') && <Link to="/app/studio" className="nav-ai" aria-current={studioActive ? 'page' : undefined}><Icon name="spark" />AI Studio<span className="kbd">{isMac ? '⌘' : 'Ctrl'} K</span></Link>}
+          {can('ai.use') && item('/app/studio/hse-documents', 'doc', 'HSE Document Studio')}
           <div className="nav-group">Overview</div>
           {can('dashboard.view') && item('/app', 'dashboard', 'Command centre', true)}
           <div className="nav-group">HSE operations</div>
