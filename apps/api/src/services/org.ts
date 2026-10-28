@@ -7,6 +7,8 @@ export interface OrgSettings {
   hazardCategories: string[];
   /** Prevent the person who submitted a corrective action from verifying it. */
   segregateVerification: boolean;
+  /** Longest validity of one permit to work, in hours (organisation setting; default 24). */
+  permitMaxHours: number;
 }
 
 const cache = new Map<string, { at: number; value: OrgSettings }>();
@@ -24,6 +26,7 @@ export async function orgSettings(q: Queryable, organizationId: string): Promise
     riskMatrix,
     hazardCategories: Array.isArray(raw.hazardCategories) && raw.hazardCategories.length ? raw.hazardCategories : [...DEFAULT_HAZARD_CATEGORIES],
     segregateVerification: raw.segregateVerification !== false,
+    permitMaxHours: typeof raw.permitMaxHours === 'number' && raw.permitMaxHours >= 1 && raw.permitMaxHours <= 168 ? raw.permitMaxHours : 24,
   };
   cache.set(organizationId, { at: Date.now(), value });
   return value;

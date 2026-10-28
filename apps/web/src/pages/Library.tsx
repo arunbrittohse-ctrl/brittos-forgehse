@@ -34,8 +34,8 @@ interface FileDetail extends FileBase {
 }
 interface Meta { maxUploadMb: number; canUpload: boolean; canApprove: boolean; canCreateOrgWide: boolean; fileTypes: { ext: string; label: string }[]; malwareScanning: boolean }
 
-const RECORD_PATH: Record<LibraryRecordType, string> = { observation: '/app/observations/', hazard: '/app/hazards/', document: '/app/documents/' };
-const RECORD_LABEL: Record<LibraryRecordType, string> = { observation: 'Observation', hazard: 'Hazard', document: 'HSE document' };
+const RECORD_PATH: Record<LibraryRecordType, string> = { observation: '/app/observations/', hazard: '/app/hazards/', document: '/app/documents/', permit: '/app/permits/' };
+const RECORD_LABEL: Record<LibraryRecordType, string> = { observation: 'Observation', hazard: 'Hazard', document: 'HSE document', permit: 'Permit to work' };
 const ACCEPT = '.pdf,.docx,.xlsx,.pptx,.csv,.jpg,.jpeg,.png,.webp,.heic,.mp4,.mov,.m4a';
 
 export function VersionChip({ s, label }: { s: VersionStatus; label: string }) {

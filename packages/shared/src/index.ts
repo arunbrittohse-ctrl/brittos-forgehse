@@ -15,3 +15,4 @@ export * from './documents';
 export * from './hazards/register';
 export * from './hazards/insights';
 export * from './library';
+export * from './permits';

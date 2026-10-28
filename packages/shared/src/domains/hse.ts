@@ -73,7 +73,7 @@ export const hazardLibraryEntrySchema = z.object({
 });
 
 /* ================================================================ Permit to work */
-export const PERMIT_TYPES = ['general', 'hot_work', 'work_at_height', 'confined_space', 'excavation', 'electrical_isolation', 'lifting', 'other'] as const;
+export const PERMIT_TYPES = ['general', 'hot_work', 'cold_work', 'work_at_height', 'confined_space', 'excavation', 'electrical_isolation', 'lifting', 'other'] as const;
 export const permitLifecycle = defineLifecycle({
   states: ['draft', 'submitted', 'safety_review', 'authorised', 'active', 'suspended', 'completed', 'closed', 'expired', 'cancelled', 'rejected'] as const,
   initial: 'draft', terminal: ['closed', 'expired', 'cancelled', 'rejected'] as const,

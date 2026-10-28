@@ -188,11 +188,12 @@ export function registerLibraryRoutes(r: Router, { db, storage, config }: Deps) 
     const vs = await versions(f, auth);
     const allLatest = (await db.query<VersionRow>(`${VSELECT} WHERE v.file_id = $1 ORDER BY v.version_no DESC LIMIT 1`, [f.id])).rows[0];
     const links = await db.query<{ id: string; record_type: LibraryRecordType; record_id: string; ref: string | null; label: string | null }>(
-      `SELECT l.id, l.record_type, l.record_id, COALESCE(o.ref_no, h.ref_no, d.doc_number) AS ref, COALESCE(left(o.description, 120), h.activity, d.title) AS label
+      `SELECT l.id, l.record_type, l.record_id, COALESCE(o.ref_no, h.ref_no, d.doc_number, pt.ref_no) AS ref, COALESCE(left(o.description, 120), h.activity, d.title, left(pt.work_description, 120)) AS label
          FROM library_links l
          LEFT JOIN observations o ON l.record_type = 'observation' AND o.id = l.record_id AND o.organization_id = l.organization_id
          LEFT JOIN hazard_register h ON l.record_type = 'hazard' AND h.id = l.record_id AND h.organization_id = l.organization_id
          LEFT JOIN hse_documents d ON l.record_type = 'document' AND d.id = l.record_id AND d.organization_id = l.organization_id
+         LEFT JOIN permits pt ON l.record_type = 'permit' AND pt.id = l.record_id AND pt.organization_id = l.organization_id
         WHERE l.file_id = $1 AND l.organization_id = $2 ORDER BY l.created_at`, [f.id, auth.organizationId]);
     return { ...fileView(f), versions: vs.map(versionView), links: links.rows.map((l) => ({ id: l.id, recordType: l.record_type, recordId: l.record_id, ref: l.ref, label: l.label })), permissions: filePermissions(auth, f, allLatest) };
   }
@@ -459,8 +460,8 @@ export function registerLibraryRoutes(r: Router, { db, storage, config }: Deps) 
   async function linkRecord(auth: AuthContext, f: FileRow, type: LibraryRecordType, recordId: string, ip: string) {
     const latest = (await db.query<VersionRow>(`${VSELECT} WHERE v.file_id = $1 ORDER BY v.version_no DESC LIMIT 1`, [f.id])).rows[0];
     if (!filePermissions(auth, f, latest).link) throw forbidden();
-    const table = { observation: 'observations', hazard: 'hazard_register', document: 'hse_documents' }[type];
-    const perm: Permission = { observation: 'observation.view', hazard: 'risk.view', document: 'document.view' }[type] as Permission;
+    const table = { observation: 'observations', hazard: 'hazard_register', document: 'hse_documents', permit: 'permits' }[type];
+    const perm: Permission = { observation: 'observation.view', hazard: 'risk.view', document: 'document.view', permit: 'permit.view' }[type] as Permission;
     const rec = (await db.query<{ project_id: string | null; ref: string }>(`SELECT project_id, ${type === 'document' ? 'doc_number' : 'ref_no'} AS ref FROM ${table} WHERE id = $1 AND organization_id = $2`, [recordId, auth.organizationId])).rows[0];
     if (!rec) throw notFound('Record');
     const reachView = projectReach(auth, perm);

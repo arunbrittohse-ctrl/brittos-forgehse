@@ -19,6 +19,7 @@ import { registerStudioRoutes } from './routes/studio';
 import { registerDocumentRoutes } from './routes/documents';
 import { registerHazardRoutes } from './routes/hazards';
 import { registerLibraryRoutes } from './routes/library';
+import { registerPermitRoutes } from './routes/permits';
 import { registerHealthRoutes } from './routes/health';
 import { createStaticHandler } from './http/static';
 
@@ -91,6 +92,7 @@ export function buildApp(deps: Deps, opts: { fallback?: (req: import('node:http'
   registerDocumentRoutes(router, deps);
   registerHazardRoutes(router, deps);
   registerLibraryRoutes(router, deps);
+  registerPermitRoutes(router, deps);
 
   return createServer(router, {
     corsOrigins: deps.config.CORS_ORIGINS.split(','),

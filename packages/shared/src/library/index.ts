@@ -63,7 +63,7 @@ export const libraryVersionLifecycle = defineLifecycle({
 export type LibraryTransition = keyof typeof libraryVersionLifecycle.transitions;
 
 /** HSE records a file can be linked to. */
-export const LIBRARY_RECORD_TYPES = ['observation', 'hazard', 'document'] as const;
+export const LIBRARY_RECORD_TYPES = ['observation', 'hazard', 'document', 'permit'] as const;
 export type LibraryRecordType = (typeof LIBRARY_RECORD_TYPES)[number];
 
 /** Accepted formats. The server checks the file's content, not only its name. */
