@@ -161,6 +161,11 @@ export interface PermitFacts {
 /** Effective gas-test requirement: always for confined spaces, otherwise as set on the permit. */
 export const gasTestNeeded = (f: Pick<PermitFacts, 'permitType' | 'gasTestRequired'>) => PTW_TYPE_DEFS[f.permitType].gasTest === 'always' || f.gasTestRequired;
 
+/** Readings are entered to the minute, so a test in the same minute as submission/suspension counts. */
+const minuteFloor = (iso: string | null) => (iso ? Math.floor(new Date(iso).getTime() / 60_000) * 60_000 : 0);
+/** A test counts after an event when it was recorded after it and taken no earlier than that minute. */
+const after = (g: GasTest, iso: string | null) => !iso || (new Date(g.takenAt).getTime() >= minuteFloor(iso) && (!g.recordedAt || new Date(g.recordedAt).getTime() >= new Date(iso).getTime()));
+
 /** Problems with the application itself (fields the applicant must complete before submitting). */
 export function applicationIssues(f: PermitFacts, maxHours: number): PermitIssue[] {
   const out: PermitIssue[] = [];
@@ -185,8 +190,7 @@ export function authorisationIssues(f: PermitFacts, now: Date, maxHours: number)
   const missing = def.checks.filter((c) => c.critical && !confirmed.has(c.id));
   if (missing.length) out.push({ code: 'critical_checks', message: `Confirm the critical checks: ${missing.map((c) => c.text).join('; ')}` });
   if (gasTestNeeded(f)) {
-    const since = f.submittedAt ? new Date(f.submittedAt).getTime() : 0;
-    const recent = f.gasTests.filter((g) => new Date(g.takenAt).getTime() >= since);
+    const recent = f.gasTests.filter((g) => after(g, f.submittedAt));
     const last = recent.sort((a, b) => b.takenAt.localeCompare(a.takenAt))[0];
     if (!last) out.push({ code: 'gas_test', message: 'Record a gas test taken after the permit was submitted' });
     else if (!last.withinLimits) out.push({ code: 'gas_test_failed', message: 'The latest gas test is not within the site limits' });
@@ -199,8 +203,7 @@ export function authorisationIssues(f: PermitFacts, now: Date, maxHours: number)
 export function revalidationIssues(f: PermitFacts, now: Date): PermitIssue[] {
   const out: PermitIssue[] = [];
   if (gasTestNeeded(f)) {
-    const since = f.suspendedAt ? new Date(f.suspendedAt).getTime() : 0;
-    const last = f.gasTests.filter((g) => new Date(g.takenAt).getTime() >= since).sort((a, b) => b.takenAt.localeCompare(a.takenAt))[0];
+    const last = f.gasTests.filter((g) => after(g, f.suspendedAt ?? null)).sort((a, b) => b.takenAt.localeCompare(a.takenAt))[0];
     if (!last) out.push({ code: 'gas_test', message: 'Record a new gas test taken after the suspension' });
     else if (!last.withinLimits) out.push({ code: 'gas_test_failed', message: 'The latest gas test is not within the site limits' });
   }

@@ -104,7 +104,7 @@ await step('attach evidence from an observation page', async () => {
   await eng.locator('#lf-file').setInputFiles({ name: 'edge-protection.png', mimeType: 'image/png', buffer: Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(64, 7)]) });
   await eng.getByRole('button', { name: 'Upload as draft' }).click();
   await eng.waitForURL(/\/app\/observations\//);
-  await eng.getByRole('link', { name: /edge protection/i }).waitFor();
+  await eng.getByRole('link', { name: /edge protection/i }).first().waitFor();
 });
 
 await step('phone layout has no horizontal overflow', async () => {

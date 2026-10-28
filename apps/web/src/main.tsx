@@ -26,6 +26,7 @@ import { ModuleWorkspace, type HseModuleKey } from './pages/ModuleWorkspace';
 import { DocumentRegister, DocumentNew, DocumentEditor } from './pages/DocumentStudio';
 import { HazardRegister, HazardEditor } from './pages/HazardRegister';
 import { LibraryList, LibraryUpload, LibraryFile } from './pages/Library';
+import { PermitRegister, PermitForm, PermitDetail } from './pages/Permits';
 
 applyTheme(readPref('theme', 'light'));
 applyMotion();
@@ -44,6 +45,10 @@ function AppRoutes({ path }: { path: string }) {
   if (path === '/app/risk-assessments') return <HazardRegister />;
   if (path === '/app/hazards/new') return <HazardEditor />;
   if ((m = match('/app/hazards/:id', path))) return <HazardEditor id={m.id!} />;
+  if (path === '/app/permits') return <PermitRegister />;
+  if (path === '/app/permits/new') return <PermitForm />;
+  if ((m = match('/app/permits/:id/edit', path))) return <PermitForm id={m.id!} />;
+  if ((m = match('/app/permits/:id', path))) return <PermitDetail id={m.id!} />;
   if (path === '/app/library') return <LibraryList />;
   if (path === '/app/library/new') return <LibraryUpload />;
   if ((m = match('/app/library/:id', path))) return <LibraryFile id={m.id!} />;
@@ -56,7 +61,6 @@ function AppRoutes({ path }: { path: string }) {
   if (path === '/app/ai-usage') return <AiUsage />;
   if (path === '/app/account') return <Account />;
   const moduleRoutes: Record<string, HseModuleKey> = {
-    '/app/permits': 'permits',
     '/app/inspections-audits': 'inspections-audits', '/app/incidents': 'incidents',
     '/app/actions': 'actions', '/app/training': 'training', '/app/contractors': 'contractors',
     '/app/environmental-health': 'environmental-health', '/app/emergency': 'emergency',

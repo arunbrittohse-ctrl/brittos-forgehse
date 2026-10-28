@@ -101,7 +101,7 @@ export function registerDashboardRoutes(r: Router, { db }: Deps) {
         openRiskMatrix: { size: settings.riskMatrix.size, bands: settings.riskMatrix.bands, cells: matrix.rows },
         modules: {
           observations: { available: true },
-          incidents: { available: false }, permits: { available: false }, inspections: { available: false },
+          incidents: { available: false }, permits: { available: true }, inspections: { available: false },
           riskAssessments: { available: false }, training: { available: false }, manHours: { available: false },
           environmental: { available: false },
         },

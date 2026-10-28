@@ -25,3 +25,17 @@ describe('document library rules', () => {
     assert.equal(libraryMetaSchema.safeParse({ ...base, issueDate: '2026-02-01', expiryDate: '2026-01-01' }).success, false);
   });
 });
+
+import { authorisationIssues } from './index';
+describe('permit readiness', () => {
+  it('counts a gas test taken in the same minute as submission', () => {
+    const f = { permitType: 'confined_space' as const, validFrom: '2026-10-28T08:00:00Z', validTo: '2026-10-28T16:00:00Z', gasTestRequired: true,
+      details: { attendant: 'A', entrants: ['B'], rescuePlan: 'R' }, isolations: [], checks: [], submittedAt: '2026-10-28T09:15:42Z',
+      gasTests: [{ id: 'g', takenAt: '2026-10-28T09:15:00Z', instrument: 'x', oxygenPct: 20.9, lelPct: 0, h2sPpm: null, coPpm: null, other: '', withinLimits: true, note: '', byId: 'u', byName: 'u', recordedAt: '' }] };
+    const codes = authorisationIssues(f, new Date('2026-10-28T10:00:00Z'), 24).map((i) => i.code);
+    assert.ok(!codes.includes('gas_test'));
+    assert.ok(codes.includes('critical_checks'));
+    const early = { ...f, gasTests: [{ ...f.gasTests[0]!, takenAt: '2026-10-28T09:14:00Z' }] };
+    assert.ok(authorisationIssues(early, new Date('2026-10-28T10:00:00Z'), 24).some((i) => i.code === 'gas_test'));
+  });
+});
