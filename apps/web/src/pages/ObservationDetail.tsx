@@ -5,6 +5,7 @@ import { useAsync } from '../lib/hooks';
 import { useAuth } from '../lib/auth';
 import { Link } from '../lib/router';
 import { fmtDate, fmtDateTime, todayISO } from '../lib/format';
+import { RecordFiles } from './Library';
 import { PageHead } from '../components/AppShell';
 import { Loading, ErrorNotice, RiskChip, StatusBadge, Dialog, Field, useToast, Icon } from '../components/ui';
 
@@ -176,6 +177,7 @@ export function ObservationDetail({ id }: { id: string }) {
               </ol>
             </div>
           </section>
+          <RecordFiles recordType="observation" recordId={o.id} projectId={o.projectId} siteId={o.siteId} />
         </div>
       </div>
       {dialog && <TransitionDialog transition={dialog} o={o} onClose={() => setDialog(null)} onDone={(msg) => { setDialog(null); toast(msg); reload(); }} />}

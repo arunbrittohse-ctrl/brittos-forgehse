@@ -12,6 +12,7 @@ import { useAsync } from '../lib/hooks';
 import { useAuth } from '../lib/auth';
 import { Link, navigate, useLocation } from '../lib/router';
 import { fmtDate, fmtDateTime, todayISO } from '../lib/format';
+import { RecordFiles } from './Library';
 import { PageHead } from '../components/AppShell';
 import { Dialog, Empty, ErrorNotice, Icon, Loading, Pagination, useToast } from '../components/ui';
 
@@ -311,6 +312,7 @@ export function HazardEditor({ id }: { id?: string }) {
             <ul>{h.links.map((l) => <li key={l.id}><Link to={l.type === 'document' ? `/app/documents/${l.id}` : `/app/observations/${l.id}`}>{l.ref}</Link> — {l.label} <span className="muted">({l.type}, {l.status})</span></li>)}</ul>
             <span className="muted">Permits, incidents and inspections become linkable when those modules go live.</span>
           </div></section>}
+          {h && <div style={{ marginTop: 12 }}><RecordFiles recordType="hazard" recordId={h.id} projectId={h.projectId} siteId={h.siteId} /></div>}
           {h && h.lessons.length > 0 && <section className="panel" style={{ marginTop: 12 }}><div className="panel-head"><h3>Verified lessons</h3></div><div className="panel-body small">
             <span className="muted">Closed observations in this hazard family whose corrective action was verified.</span>
             <ul>{h.lessons.map((x) => <li key={x.id}><Link to={`/app/observations/${x.id}`}>{x.ref}</Link>: {x.verification}</li>)}</ul>

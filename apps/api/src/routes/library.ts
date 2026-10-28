@@ -22,10 +22,10 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import {
-  libraryMetaSchema, checkTransition, libraryVersionLifecycle, expiryState, scopesFor,
+  libraryMetaSchema, checkTransition, libraryVersionLifecycle, expiryState, scopesFor, roleHas,
   LIBRARY_DOC_TYPES, LIBRARY_DOC_TYPE_LABELS, CONFIDENTIALITY, CONFIDENTIALITY_LABELS, RETENTION, RETENTION_LABELS,
   VERSION_STATUSES, VERSION_STATUS_LABELS, LIBRARY_FILE_TYPES, LIBRARY_RECORD_TYPES,
-  type LibraryMeta, type Permission, type VersionStatus, type LibraryRecordType,
+  type LibraryMeta, type Permission, type Role, type VersionStatus, type LibraryRecordType,
 } from '@forgehse/shared';
 import type { Deps } from '../app';
 import type { Router } from '../http/core';
@@ -220,7 +220,9 @@ export function registerLibraryRoutes(r: Router, { db, storage, config }: Deps) 
       body: await storage.get(v.storage_key), contentType: v.content_type,
       headers: {
         'Content-Disposition': `${inline ? 'inline' : 'attachment'}; filename="${v.filename.replace(/["\\\r\n]/g, '')}"`,
-        'Content-Security-Policy': "default-src 'none'; img-src 'self'; media-src 'self'; sandbox",
+        // PDFs open in the browser's own viewer inside the app's preview frame; everything else is sandboxed.
+        'Content-Security-Policy': v.content_type === 'application/pdf' && inline ? "default-src 'none'; frame-ancestors 'self'" : "default-src 'none'; frame-ancestors 'self'; sandbox",
+        'X-Frame-Options': 'SAMEORIGIN',
         'Cache-Control': 'private, no-store', 'X-Content-SHA256': v.sha256,
       },
     };
@@ -241,6 +243,19 @@ export function registerLibraryRoutes(r: Router, { db, storage, config }: Deps) 
       canCreateOrgWide: scopesFor(auth.assignments, 'library.upload', auth.organizationId).orgWide,
       malwareScanning: false,
     } };
+  });
+
+  /** People who can be named as a file owner in a project (members with library access). */
+  r.get('/api/library/people', async (ctx) => {
+    const auth = requireAuth(ctx);
+    if (!hasAnywhere(auth, 'library.upload')) throw forbidden();
+    const projectId = z.string().uuid().nullable().catch(null).parse(ctx.query.projectId || null);
+    const rows = (await db.query<{ id: string; full_name: string; job_title: string; role: Role }>(
+      `SELECT u.id, u.full_name, u.job_title, ra.role FROM users u JOIN role_assignments ra ON ra.user_id = u.id
+        WHERE ra.organization_id = $1 AND u.active AND (ra.project_id IS NULL OR ra.project_id = $2) ORDER BY u.full_name`, [auth.organizationId, projectId])).rows;
+    const seen = new Map<string, { id: string; fullName: string; jobTitle: string }>();
+    for (const u of rows) if (roleHas(u.role, 'library.view') && !seen.has(u.id)) seen.set(u.id, { id: u.id, fullName: u.full_name, jobTitle: u.job_title });
+    return { json: { items: [...seen.values()] } };
   });
 
   r.post('/api/library/uploads', async (ctx) => {

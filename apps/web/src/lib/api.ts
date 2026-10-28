@@ -21,8 +21,8 @@ export function setAuthHandlers(h: { unauthorized: () => void; passwordChange: (
   onPasswordChange = h.passwordChange;
 }
 
-export async function api<T = unknown>(path: string, opts: { method?: string; body?: unknown; query?: Query; file?: Blob } = {}): Promise<T> {
-  const headers: Record<string, string> = { 'X-Requested-With': 'forgehse' };
+export async function api<T = unknown>(path: string, opts: { method?: string; body?: unknown; query?: Query; file?: Blob; headers?: Record<string, string> } = {}): Promise<T> {
+  const headers: Record<string, string> = { 'X-Requested-With': 'forgehse', ...opts.headers };
   let body: BodyInit | undefined;
   if (opts.file) { body = opts.file; headers['Content-Type'] = opts.file.type || 'application/octet-stream'; }
   else if (opts.body !== undefined) { body = JSON.stringify(opts.body); headers['Content-Type'] = 'application/json'; }

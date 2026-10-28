@@ -25,6 +25,7 @@ import { NotFound } from './pages/NotFound';
 import { ModuleWorkspace, type HseModuleKey } from './pages/ModuleWorkspace';
 import { DocumentRegister, DocumentNew, DocumentEditor } from './pages/DocumentStudio';
 import { HazardRegister, HazardEditor } from './pages/HazardRegister';
+import { LibraryList, LibraryUpload, LibraryFile } from './pages/Library';
 
 applyTheme(readPref('theme', 'light'));
 applyMotion();
@@ -43,6 +44,9 @@ function AppRoutes({ path }: { path: string }) {
   if (path === '/app/risk-assessments') return <HazardRegister />;
   if (path === '/app/hazards/new') return <HazardEditor />;
   if ((m = match('/app/hazards/:id', path))) return <HazardEditor id={m.id!} />;
+  if (path === '/app/library') return <LibraryList />;
+  if (path === '/app/library/new') return <LibraryUpload />;
+  if ((m = match('/app/library/:id', path))) return <LibraryFile id={m.id!} />;
   if (path === '/app/documents') return <DocumentRegister />;
   if (path === '/app/documents/new') return <DocumentNew />;
   if ((m = match('/app/documents/:id', path))) return <DocumentEditor id={m.id!} />;
@@ -73,7 +77,7 @@ function App() {
   }, [loading, me, inApp, path]);
 
   useEffect(() => {
-    const titles: Record<string, string> = { '/': 'AI-powered HSE platform', '/login': 'Sign in', '/app/studio': 'AI Studio', '/app/studio/library': 'Studio library' };
+    const titles: Record<string, string> = { '/': 'AI-powered HSE platform', '/login': 'Sign in', '/app/studio': 'AI Studio', '/app/studio/library': 'Studio library', '/app/library': 'Document & evidence library', '/app/library/new': 'Upload to the library' };
     document.title = `${titles[path] ?? 'Workspace'} — BRITTO'S FORGEHSE`;
   }, [path]);
 

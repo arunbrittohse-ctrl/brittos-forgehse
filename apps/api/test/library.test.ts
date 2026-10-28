@@ -104,7 +104,9 @@ describe('Document & evidence library', () => {
     assert.deepEqual(ap2.data.versions.map((v: { status: string }) => v.status), ['approved', 'superseded']);
     const content = await viewer.get(`/api/library/versions/${ap2.data.versions[0].id}/content`);
     assert.equal(content.status, 200); assert.ok(Buffer.compare(content.data, PDF2) === 0); assert.equal(content.headers.get('x-content-sha256'), sha(PDF2));
-    assert.match(content.headers.get('content-security-policy')!, /sandbox/);
+    assert.match(content.headers.get('content-security-policy')!, /frame-ancestors 'self'/, 'PDF preview may only be framed by the app');
+    const dl = await viewer.get(`/api/library/versions/${ap2.data.versions[0].id}/content?download=1`);
+    assert.match(dl.headers.get('content-security-policy')!, /sandbox/); assert.match(dl.headers.get('content-disposition')!, /^attachment/);
     assert.ok((await app.db.query(`SELECT 1 FROM audit_log WHERE action = 'library.view_file' AND entity_id = $1`, [f.id])).rowCount);
   });
 

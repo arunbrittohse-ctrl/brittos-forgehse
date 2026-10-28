@@ -14,6 +14,7 @@ import { useAsync } from '../lib/hooks';
 import { useAuth } from '../lib/auth';
 import { Link, navigate, useLocation } from '../lib/router';
 import { fmtDate, fmtDateTime } from '../lib/format';
+import { RecordFiles } from './Library';
 import { PageHead } from '../components/AppShell';
 import { Dialog, Empty, ErrorNotice, Icon, Loading, Pagination, useToast } from '../components/ui';
 import { saveBlob } from '../components/studio-preview';
@@ -305,7 +306,7 @@ export function DocumentEditor({ id }: { id: string }) {
   const [content, setContent] = useState<DocContent | null>(null);
   const [inputs, setInputs] = useState<DocInputs>({});
   const [title, setTitle] = useState('');
-  const [tab, setTab] = useState<'document' | 'inputs' | 'history'>('document');
+  const [tab, setTab] = useState<'document' | 'inputs' | 'history' | 'files'>('document');
   const [dialog, setDialog] = useState<null | 'return' | 'approve' | 'revise' | 'withdraw' | 'submit'>(null);
   const [busy, setBusy] = useState(false);
   const history = useAsync(() => (tab === 'history' ? api<{ items: Revision[] }>(`/documents/${id}/revisions`) : Promise.resolve({ items: [] as Revision[] })), [tab, id, doc?.version]);
@@ -353,7 +354,7 @@ export function DocumentEditor({ id }: { id: string }) {
 
       <div className="row no-print" style={{ gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
         <div className="segmented" role="tablist">
-          {(['document', 'inputs', 'history'] as const).map((k) => <button key={k} role="tab" aria-selected={tab === k} className="chip-btn" aria-pressed={tab === k} onClick={() => setTab(k)}>{k === 'document' ? 'Document' : k === 'inputs' ? 'Inputs' : 'History'}</button>)}
+          {(['document', 'inputs', 'history', 'files'] as const).map((k) => <button key={k} role="tab" aria-selected={tab === k} className="chip-btn" aria-pressed={tab === k} onClick={() => setTab(k)}>{k === 'document' ? 'Document' : k === 'inputs' ? 'Inputs' : k === 'history' ? 'History' : 'Files & evidence'}</button>)}
         </div>
         <span className="spacer" />
         {editable && <button className="btn btn-primary" disabled={!dirty || busy} onClick={save}><Icon name="check" />{dirty ? 'Save draft' : 'Saved'}</button>}
@@ -393,6 +394,8 @@ export function DocumentEditor({ id }: { id: string }) {
             <button className="btn" disabled={busy || dirty} title={dirty ? 'Save the inputs first' : undefined} onClick={() => { if (window.confirm('Rebuild the document from the saved inputs? Edits made in the Document tab will be replaced (the current version stays in History).')) void post('regenerate', {}, 'Rebuilt from saved inputs'); }}><Icon name="refresh" />Rebuild document from saved inputs</button>
           </div>}
         </>)}
+
+      {tab === 'files' && <RecordFiles recordType="document" recordId={id} projectId={doc.project?.id ?? null} siteId={doc.site?.id ?? null} />}
 
       {tab === 'history' && (
         <div className="panel">{history.loading && <Loading />}{history.data && (
