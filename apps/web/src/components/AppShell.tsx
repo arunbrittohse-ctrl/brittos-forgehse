@@ -64,7 +64,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {item('/app/contractors', 'users', 'Contractors')}
           {item('/app/environmental-health', 'leaf', 'Environmental & health')}
           {item('/app/emergency', 'first-aid', 'Emergency readiness')}
-          {item('/app/documents', 'doc', 'Controlled documents')}
+          {item('/app/documents', 'doc', 'HSE Document Studio')}
           <div className="nav-group">Insights</div>
           {item('/app/analytics', 'chart', 'Analytics & reports')}
           {item('/app/studio/library', 'library', 'Studio library')}

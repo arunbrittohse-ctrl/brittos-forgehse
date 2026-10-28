@@ -715,3 +715,17 @@ a.bar-row:hover, a.bar-row:focus-visible { background: var(--surface-2); }
 .has-lightfield > svg.blueprint, .hero-band > svg.blueprint { position: absolute; inset: 0; z-index: 0; }
 .auth-side .brand-name { color: #fff; }
 .auth-side .brand-parent { color: #8fb0ff; }
+
+/* ---------------------------------------------------------------- HSE Document Studio */
+.notice-warn { border-color: #f59e0b; background: color-mix(in srgb, #fef3c7 70%, transparent); }
+.doc-section .panel-head { flex-wrap: wrap; }
+.doc-section textarea.textarea { min-height: 0; }
+.print-only { display: none; }
+@media print {
+  .rail, .topbar, .no-print, .page-head .row, .nav, .icon-btn, .btn { display: none !important; }
+  .print-only { display: block; }
+  .main, .page, .shell { margin: 0 !important; padding: 0 !important; display: block !important; }
+  .panel { break-inside: avoid; box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+  .doc-print textarea, .doc-print input, .doc-print select { border: none !important; resize: none; background: transparent !important; color: #000 !important; }
+  body { background: #fff !important; color: #000 !important; }
+}

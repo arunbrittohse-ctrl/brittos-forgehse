@@ -1,6 +1,6 @@
 /**
  * Studio exports: Word (.docx via the `docx` library), PDF (pdf-lib) and SVG (shared renderers).
- * Every export states its review status. Drafts carry "AI-assisted draft — not reviewed" in the
+ * Every export states its review status. Drafts carry "Generated draft — NOT reviewed" in the
  * header and footer so an unreviewed document cannot pass as an approved one.
  */
 import {
@@ -34,7 +34,7 @@ const BAND_FILL: Record<string, string> = { low: 'DCFCE7', medium: 'FEF3C7', hig
 const fmtDate = (d: Date, tz: string) => d.toLocaleDateString('en-GB', { timeZone: tz, day: '2-digit', month: 'short', year: 'numeric' });
 const statusLine = (m: ExportMeta) => m.status === 'reviewed' && m.reviewedBy && m.reviewedAt
   ? `Reviewed by ${m.reviewedBy} on ${fmtDate(m.reviewedAt, m.timezone)}`
-  : 'AI-assisted draft — NOT reviewed. Verify against project procedures before use.';
+  : 'Generated draft — NOT reviewed. Verify against project procedures before use.';
 
 function risk(l: number, s: number, cfg: RiskMatrixConfig) {
   const c = (n: number) => Math.min(cfg.size, Math.max(1, Math.round(n)));
@@ -70,7 +70,7 @@ function table(head: string[], rows: (string | { text: string; fill?: string; bo
 
 function metaTable(m: ExportMeta) {
   const rows: [string, string][] = [
-    ['Organisation', m.organization], ['Project', m.project ?? 'All projects'], ['Prepared by', `${m.preparedBy} (AI-assisted)`],
+    ['Organisation', m.organization], ['Project', m.project ?? 'All projects'], ['Prepared by', `${m.preparedBy} (generated in Studio)`],
     ['Generated', fmtDate(m.createdAt, m.timezone)], ['Reference', m.reference], ['Status', statusLine(m)],
   ];
   return new Table({
@@ -299,7 +299,7 @@ export async function studioPdf(kind: StudioKind, content: unknown, m: ExportMet
   f.text(STUDIO_KIND_LABELS[kind].toUpperCase(), { size: 8, bold: true, color: TEAL, gap: 10 });
   f.text(m.title, { size: 18, bold: true, color: NAVY, gap: 8 });
   f.table(['Field', 'Detail'], [
-    ['Organisation', m.organization], ['Project', m.project ?? 'All projects'], ['Prepared by', `${m.preparedBy} (AI-assisted)`],
+    ['Organisation', m.organization], ['Project', m.project ?? 'All projects'], ['Prepared by', `${m.preparedBy} (generated in Studio)`],
     ['Generated', fmtDate(m.createdAt, m.timezone)], ['Reference', m.reference], ['Status', statusLine(m)],
   ].map(([a, b]) => [{ text: a!, fill: LIGHT, bold: true }, { text: b!, bold: a === 'Status' }]), [24, 76]);
 

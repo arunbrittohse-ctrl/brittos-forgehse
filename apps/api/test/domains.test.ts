@@ -6,13 +6,13 @@ import { freshDb, seedWorld, type World } from './helpers';
 
 /** Tables whose `status` CHECK must list exactly the states of a lifecycle. */
 const STATUS_TABLES: Record<string, [string, string]> = {
-  controlled_documents: ['document_control', 'document'], risk_assessments: ['risk', 'riskAssessment'], permits: ['permits', 'permit'],
+  hse_documents: ['document_control', 'document'], risk_assessments: ['risk', 'riskAssessment'], permits: ['permits', 'permit'],
   inspections: ['inspections', 'inspection'], incidents: ['incidents', 'incident'], corrective_actions: ['actions', 'action'],
   hse_gaps: ['actions', 'gap'], contractors: ['contractors', 'contractor'], environmental_monitoring: ['environment', 'monitoring'],
   emergency_drills: ['emergency', 'drill'],
 };
 
-describe('HSE domain tables (migration 0006)', () => {
+describe('HSE domain tables (migrations 0007–0008)', () => {
   let db: Db; let w: World;
   before(async () => { db = await freshDb(); w = await seedWorld(db); });
   after(() => db.end());

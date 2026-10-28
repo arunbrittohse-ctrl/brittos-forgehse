@@ -49,47 +49,7 @@ CREATE TABLE hse_evidence (
 );
 CREATE INDEX hse_evidence_rec_idx ON hse_evidence (organization_id, record_type, record_id);
 
-/* ---------------------------------------------------------------- document control */
-CREATE TABLE controlled_documents (
-  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id  uuid NOT NULL,
-  project_id       uuid NOT NULL,
-  site_id          uuid,
-  ref_no           text NOT NULL,
-  doc_number       text NOT NULL,
-  category         text NOT NULL CHECK (category IN ('hse_plan','policy','procedure','method_statement','risk_assessment','emergency_plan','logistics_plan','traffic_management_plan','form','register','report','other')),
-  title            text NOT NULL,
-  revision         text NOT NULL DEFAULT '00',
-  summary          text NOT NULL DEFAULT '',
-  status           text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','in_review','approved','issued','superseded','withdrawn')),
-  owner_id         uuid NOT NULL REFERENCES users(id),
-  submitted_by     uuid REFERENCES users(id),
-  approved_by      uuid REFERENCES users(id),
-  approved_at      timestamptz,
-  review_due_date  date,
-  studio_item_id   uuid REFERENCES studio_items(id),
-  version          integer NOT NULL DEFAULT 1,
-  created_at       timestamptz NOT NULL DEFAULT now(),
-  updated_at       timestamptz NOT NULL DEFAULT now(),
-  FOREIGN KEY (project_id, organization_id) REFERENCES projects (id, organization_id),
-  FOREIGN KEY (site_id, project_id, organization_id) REFERENCES sites (id, project_id, organization_id),
-  UNIQUE (organization_id, ref_no),
-  UNIQUE (organization_id, project_id, doc_number, revision),
-  CHECK (status NOT IN ('approved','issued','superseded') OR approved_by IS NOT NULL)
-);
-CREATE INDEX controlled_documents_scope_idx ON controlled_documents (organization_id, project_id, status);
-
-CREATE TABLE document_revisions (
-  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  organization_id  uuid NOT NULL REFERENCES organizations(id),
-  document_id      uuid NOT NULL REFERENCES controlled_documents(id) ON DELETE CASCADE,
-  revision         text NOT NULL,
-  change_summary   text NOT NULL DEFAULT '',
-  evidence_id      uuid REFERENCES hse_evidence(id),
-  created_by       uuid NOT NULL REFERENCES users(id),
-  created_at       timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (document_id, revision)
-);
+/* Document control lives in hse_documents / hse_document_revisions (migration 0008). */
 
 /* ---------------------------------------------------------------- hazards & risk assessments */
 CREATE TABLE hazard_library (

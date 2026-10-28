@@ -10,3 +10,5 @@ export * from './hse-domain';
 export * from './domains/lifecycle';
 export * from './domains/hse';
 export * from './domains/registry';
+export * from './knowledge/hse-topics';
+export * from './documents';

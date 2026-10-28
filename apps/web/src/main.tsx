@@ -23,6 +23,7 @@ import { AiUsage } from './pages/AiUsage';
 import { Account } from './pages/Account';
 import { NotFound } from './pages/NotFound';
 import { ModuleWorkspace, type HseModuleKey } from './pages/ModuleWorkspace';
+import { DocumentRegister, DocumentNew, DocumentEditor } from './pages/DocumentStudio';
 
 applyTheme(readPref('theme', 'light'));
 applyMotion();
@@ -38,6 +39,9 @@ function AppRoutes({ path }: { path: string }) {
   if (path === '/app/studio') return <Studio />;
   if (path === '/app/studio/library') return <StudioLibrary />;
   if ((m = match('/app/studio/items/:id', path))) return <StudioItemPage id={m.id!} />;
+  if (path === '/app/documents') return <DocumentRegister />;
+  if (path === '/app/documents/new') return <DocumentNew />;
+  if ((m = match('/app/documents/:id', path))) return <DocumentEditor id={m.id!} />;
   if (path === '/app/admin/projects') return <AdminProjects />;
   if (path === '/app/admin/users') return <AdminUsers />;
   if (path === '/app/audit') return <AuditTrail />;
@@ -48,7 +52,7 @@ function AppRoutes({ path }: { path: string }) {
     '/app/inspections-audits': 'inspections-audits', '/app/incidents': 'incidents',
     '/app/actions': 'actions', '/app/training': 'training', '/app/contractors': 'contractors',
     '/app/environmental-health': 'environmental-health', '/app/emergency': 'emergency',
-    '/app/documents': 'documents', '/app/analytics': 'analytics', '/app/settings': 'settings',
+    '/app/analytics': 'analytics', '/app/settings': 'settings',
   };
   if (moduleRoutes[path]) return <ModuleWorkspace moduleKey={moduleRoutes[path]} />;
   return <NotFound />;
