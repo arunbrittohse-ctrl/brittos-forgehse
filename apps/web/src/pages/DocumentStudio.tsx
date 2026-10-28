@@ -361,6 +361,7 @@ export function DocumentEditor({ id }: { id: string }) {
         {doc.permissions.approve && <><button className="btn btn-primary" disabled={busy} onClick={() => setDialog('approve')}>Approve</button><button className="btn" disabled={busy} onClick={() => setDialog('return')}>Return with comments</button></>}
         {doc.permissions.newRevision && <button className="btn" disabled={busy} onClick={() => setDialog('revise')}>Start new revision</button>}
         {doc.permissions.withdraw && <button className="btn btn-ghost" disabled={busy} onClick={() => setDialog('withdraw')}>Withdraw</button>}
+        {t.riskRegister && doc.project && <ImportToRegister docId={doc.id} disabled={busy || dirty} />}
       </div>
 
       {doc.status !== 'approved' && doc.status !== 'withdrawn' && (
@@ -412,4 +413,24 @@ export function DocumentEditor({ id }: { id: string }) {
       {dialog === 'withdraw' && <ReasonDialog title="Withdraw document" label="Reason" confirm="Withdraw" onClose={() => setDialog(null)} onConfirm={(note) => post('withdraw', { note }, 'Withdrawn')} />}
     </>
   );
+}
+
+/** Sends the rated rows of a risk-register document to the hazard register as draft entries. */
+function ImportToRegister({ docId, disabled }: { docId: string; disabled: boolean }) {
+  const { can } = useAuth();
+  const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState('');
+  const cats = useAsync(() => (open ? api<{ categories: { key: string; label: string }[] }>('/hazards/meta') : Promise.resolve(null)), [open]);
+  if (!can('risk.manage')) return null;
+  return <>
+    <button className="btn" disabled={disabled} title={disabled ? 'Save first' : 'Create draft hazard register entries from the rated rows'} onClick={() => setOpen(true)}><Icon name="arrow" />Send to hazard register</button>
+    {open && <Dialog title="Send rated rows to the hazard register" onClose={() => setOpen(false)} footer={<><button className="btn" onClick={() => setOpen(false)}>Cancel</button><button className="btn btn-primary" disabled={!category} onClick={async () => {
+      try { const r = await api<{ imported: number; skipped: number }>('/hazards/import-document', { body: { documentId: docId, category } }); toast(`${r.imported} draft hazard(s) created${r.skipped ? `, ${r.skipped} unrated or unaccepted row(s) skipped` : ''}`, 'ok'); setOpen(false); navigate('/app/risk-assessments'); }
+      catch (e) { toast((e as Error).message, 'error'); }
+    }}>Create drafts</button></>}>
+      <p className="small">Each row with an initial rating becomes a draft entry linked to this document. Its controls arrive as "not assessed", so the register will ask for effectiveness evidence before accepting any reduction in risk.</p>
+      <div className="field"><label htmlFor="imp-cat">Hazard category</label><select id="imp-cat" className="select" value={category} onChange={(e) => setCategory(e.target.value)}><option value="">Select…</option>{cats.data?.categories.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}</select></div>
+    </Dialog>}
+  </>;
 }

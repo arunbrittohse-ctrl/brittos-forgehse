@@ -8,6 +8,7 @@
  */
 import type { Lifecycle } from './lifecycle';
 import { documentStudioLifecycle } from '../documents/readiness';
+import { hazardLifecycle } from '../hazards/register';
 import {
   riskAssessmentLifecycle, permitLifecycle, inspectionLifecycle, incidentLifecycle,
   correctiveActionLifecycle, gapLifecycle, contractorLifecycle, monitoringLifecycle, drillLifecycle,
@@ -36,6 +37,7 @@ export const HSE_MODULES: HseModule[] = [
   { key: 'observations', label: 'Observations and hazard reports', status: 'live', phase: 0, tables: ['observations', 'observation_events', 'attachments'], refPrefix: 'OBS', notes: 'Existing workflow with segregation of duties.' },
   { key: 'documents_ai', label: 'AI Studio (checklists, posters, flowcharts, reviews)', status: 'live', phase: 0, tables: ['studio_items', 'studio_sources'], notes: 'Drafts only until reviewed; local rules engine or optional model provider.' },
   { key: 'risk', label: 'Hazards and risk assessments (incl. JSA)', status: 'foundation', phase: 4, tables: ['hazard_library', 'risk_assessments', 'risk_assessment_items'], refPrefix: 'RA', lifecycles: { riskAssessment: L(riskAssessmentLifecycle) }, notes: 'Initial and residual risk on the organisation matrix; revisions.' },
+  { key: 'hazard_register', label: 'Hazard register, risk engine and risk insights', status: 'live', phase: 4, tables: ['hazard_register', 'hazard_register_revisions', 'hazard_links'], refPrefix: 'HAZ', lifecycles: { hazard: L(hazardLifecycle) }, notes: 'Inherent and residual risk; reductions need assessed, implemented controls; high risk needs review plus authorised approval; explainable rule-based alerts.' },
   { key: 'permits', label: 'Permits to work', status: 'foundation', phase: 5, tables: ['permits', 'permit_approvals'], refPrefix: 'PTW', lifecycles: { permit: L(permitLifecycle) }, notes: 'A permit cannot become active without authorisation by someone other than the applicant.' },
   { key: 'inspections', label: 'Inspections and audits', status: 'foundation', phase: 6, tables: ['inspection_templates', 'inspections', 'inspection_responses'], refPrefix: 'INS', lifecycles: { inspection: L(inspectionLifecycle) }, notes: 'Versioned templates; N/A and uninspected items never count as compliant.' },
   { key: 'incidents', label: 'Incidents and investigations', status: 'foundation', phase: 6, tables: ['incidents'], refPrefix: 'INC', lifecycles: { incident: L(incidentLifecycle) }, notes: 'Restricted personal data; investigation, root causes and linked CAPA.' },

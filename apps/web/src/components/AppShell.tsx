@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="nav-group">HSE operations</div>
           {can('observation.view') && item('/app/observations', 'eye', 'Observations', false, 'eye')}
           {can('observation.create') && item('/app/report', 'plus', 'Report observation', false, 'warning')}
-          {item('/app/risk-assessments', 'shield', 'Risk assessments')}
+          {item('/app/risk-assessments', 'shield', 'Hazard register & risk')}
           {item('/app/permits', 'checklist', 'Permits to Work')}
           {item('/app/inspections-audits', 'clipboard', 'Inspections & audits')}
           {item('/app/incidents', 'warning', 'Incidents & near misses')}

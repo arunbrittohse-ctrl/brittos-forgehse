@@ -17,6 +17,7 @@ import { registerAiRoutes } from './routes/ai';
 import { registerChatRoutes } from './routes/chat';
 import { registerStudioRoutes } from './routes/studio';
 import { registerDocumentRoutes } from './routes/documents';
+import { registerHazardRoutes } from './routes/hazards';
 import { registerHealthRoutes } from './routes/health';
 import { createStaticHandler } from './http/static';
 
@@ -87,6 +88,7 @@ export function buildApp(deps: Deps) {
   registerChatRoutes(router, deps);
   registerStudioRoutes(router, deps);
   registerDocumentRoutes(router, deps);
+  registerHazardRoutes(router, deps);
 
   return createServer(router, {
     corsOrigins: deps.config.CORS_ORIGINS.split(','),

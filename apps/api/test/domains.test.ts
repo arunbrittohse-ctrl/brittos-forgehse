@@ -6,7 +6,7 @@ import { freshDb, seedWorld, type World } from './helpers';
 
 /** Tables whose `status` CHECK must list exactly the states of a lifecycle. */
 const STATUS_TABLES: Record<string, [string, string]> = {
-  hse_documents: ['document_control', 'document'], risk_assessments: ['risk', 'riskAssessment'], permits: ['permits', 'permit'],
+  hse_documents: ['document_control', 'document'], hazard_register: ['hazard_register', 'hazard'], risk_assessments: ['risk', 'riskAssessment'], permits: ['permits', 'permit'],
   inspections: ['inspections', 'inspection'], incidents: ['incidents', 'incident'], corrective_actions: ['actions', 'action'],
   hse_gaps: ['actions', 'gap'], contractors: ['contractors', 'contractor'], environmental_monitoring: ['environment', 'monitoring'],
   emergency_drills: ['emergency', 'drill'],
