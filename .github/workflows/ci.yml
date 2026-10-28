@@ -39,6 +39,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
-      - run: npm test
+      - name: npm test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee test.log || { grep -n -A25 "not ok" test.log | head -60 | sed 's/%/%25/g' | while IFS= read -r l; do echo "::error::$l"; done; exit 1; }
       - run: npm run build
       - run: node scripts/netlify/gen-migrations.mjs
