@@ -25,14 +25,14 @@ export function RiskMatrix({ size, bands, cells, href }: MatrixProps) {
     <div>
       <div className="matrix-wrap">
         <div className="matrix-axis-y">Likelihood</div>
-        <div className="matrix" style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }} role="table" aria-label="Open observations by likelihood and severity">
+        <div className="matrix" style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }} role="group" aria-label="Open observations by likelihood and severity">
           {rows.map((l) => cols.map((s) => {
             const n = count.get(`${l}:${s}`) ?? 0;
             const cls = `cell b-${bandFor(l * s, bands)} ${n ? 'has' : 'zero'}`;
             const label = `Likelihood ${l}, severity ${s}: ${n} open`;
             return n && href
-              ? <Link key={`${l}${s}`} to={href(l, s)} className={cls} aria-label={label} role="cell">{n}</Link>
-              : <div key={`${l}${s}`} className={cls} aria-label={label} role="cell">{n || '·'}</div>;
+              ? <Link key={`${l}${s}`} to={href(l, s)} className={cls} aria-label={label} >{n}</Link>
+              : <div key={`${l}${s}`} className={cls} aria-label={label} role="img">{n || '·'}</div>;
           }))}
         </div>
       </div>
@@ -85,7 +85,7 @@ export function TrendChart({ data, onSelectWeek }: { data: { week: string; repor
         </div>
         <span className="small muted">{total.r} reported · {total.c} closed in period</span>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Weekly observations: ${total.r} reported and ${total.c} closed across ${data.length} weeks`} onMouseLeave={() => setTip(null)}>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="group" aria-label={`Weekly observations: ${total.r} reported and ${total.c} closed across ${data.length} weeks`} onMouseLeave={() => setTip(null)}>
         {ticks.map((t) => (
           <g key={t}>
             <line x1={P.l} x2={W - P.r} y1={y(t)} y2={y(t)} stroke="var(--line)" />
@@ -153,7 +153,7 @@ export function RiskHistogram({ size, bands, cells, href }: MatrixProps & { href
   const go = (s: number) => { if (href && byScore.get(s)) navigate(href(s)); };
   return (
     <div className="chart-wrap">
-      <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Open items by risk score: ${total} in total, highest possible score ${maxScore}`} onMouseLeave={() => setTip(null)}>
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="group" aria-label={`Open items by risk score: ${total} in total, highest possible score ${maxScore}`} onMouseLeave={() => setTip(null)}>
         <line x1={P.l} x2={W - P.r} y1={H - P.b} y2={H - P.b} stroke="var(--line-strong)" />
         <text x={P.l - 6} y={y(max) + 4} textAnchor="end" fontSize="10" fill="var(--muted)">{max}</text>
         {scores.map((s, i) => {

@@ -78,7 +78,7 @@ function InsightsPanel({ projectId }: { projectId: string }) {
           {data?.trend.series.map((s) => (
             <div key={s.category} className="trend-row" title={`${s.category}: ${s.counts.join(', ')}`}>
               <span className="small">{s.category}</span>
-              <div className="trend-bars" aria-label={`${s.category} by month: ${s.counts.map((c, k) => `${data.trend.months[k]} ${c}`).join(', ')}`}>
+              <div className="trend-bars" role="img" aria-label={`${s.category} by month: ${s.counts.map((c, k) => `${data.trend.months[k]} ${c}`).join(', ')}`}>
                 {s.counts.map((c, k) => <span key={k} style={{ height: `${Math.max(4, (c / max) * 100)}%`, opacity: c ? 1 : 0.25 }} />)}
               </div>
             </div>))}
@@ -119,7 +119,7 @@ export function HazardRegister() {
         <select className="select" aria-label="Category" value={category} onChange={(e) => reset(() => setCategory(e.target.value))}><option value="">All categories</option>{meta.data?.categories.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}</select>
         <select className="select" aria-label="Status" value={status} onChange={(e) => reset(() => setStatus(e.target.value))}><option value="">Active statuses</option>{HAZARD_STATUSES.map((s) => <option key={s} value={s}>{HAZARD_STATUS_LABELS[s]}</option>)}</select>
         <select className="select" aria-label="Review" value={review} onChange={(e) => reset(() => setReview(e.target.value))}><option value="">Any review date</option><option value="overdue">Review overdue</option><option value="due_soon">Review due in 14 days</option></select>
-        <form className="row" style={{ gap: 6 }} onSubmit={(e) => { e.preventDefault(); reset(() => setQuery(q)); }}><input className="input" placeholder="Search ref, activity, hazard" aria-label="Search hazards" value={q} onChange={(e) => setQ(e.target.value)} /><button className="btn" type="submit"><Icon name="search" /></button></form>
+        <form className="row" style={{ gap: 6 }} onSubmit={(e) => { e.preventDefault(); reset(() => setQuery(q)); }}><input className="input" placeholder="Search ref, activity, hazard" aria-label="Search hazards" value={q} onChange={(e) => setQ(e.target.value)} /><button className="btn" type="submit" aria-label="Search hazards"><Icon name="search" /></button></form>
       </div>
       {error && <ErrorNotice error={error} retry={reload} />}
       {loading && !data && <Loading />}
@@ -155,12 +155,12 @@ function MatrixPicker({ label, m, l, s, onPick, disabled }: { label: string; m: 
   return (
     <div className="mpick">
       <div className="row" style={{ gap: 8, marginBottom: 6 }}><strong>{label}</strong><BandChip r={r} empty="Click a cell to rate" />{r && <span className="small muted">L{l} × S{s}</span>}</div>
-      <div className="mpick-grid" role="grid" aria-label={`${label} matrix`} style={{ gridTemplateColumns: `auto repeat(${m.size}, minmax(0, 1fr))` }}>
+      <div className="mpick-grid" role="group" aria-label={`${label} matrix`} style={{ gridTemplateColumns: `auto repeat(${m.size}, minmax(0, 1fr))` }}>
         {Array.from({ length: m.size }, (_, li) => { const L = m.size - li; return (
-          <div key={L} role="row" style={{ display: 'contents' }}>
+          <div key={L} style={{ display: 'contents' }}>
             <span className="mpick-axis small" title={m.likelihoodLabels?.[L - 1]}>{L}{m.likelihoodLabels?.[L - 1] ? <span className="hide-mobile"> {m.likelihoodLabels[L - 1]}</span> : null}</span>
             {Array.from({ length: m.size }, (_, si) => { const S = si + 1; const c = rateOnMatrix(L, S, m)!; const sel = l === L && s === S; return (
-              <button key={S} type="button" role="gridcell" disabled={disabled} aria-pressed={sel} aria-label={`${label}: likelihood ${L}, severity ${S}, score ${c.score} ${c.band}`}
+              <button key={S} type="button" disabled={disabled} aria-pressed={sel} aria-label={`${label}: likelihood ${L}, severity ${S}, score ${c.score} ${c.band}`}
                 className={`mpick-cell b-${c.band} ${sel ? 'sel' : ''}`} onClick={() => onPick(L, S)}>{c.score}</button>); })}
           </div>); })}
         <span />{Array.from({ length: m.size }, (_, si) => <span key={si} className="mpick-axis small" style={{ textAlign: 'center' }} title={m.severityLabels?.[si]}>{si + 1}</span>)}
