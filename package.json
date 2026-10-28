@@ -18,9 +18,15 @@
     "typecheck": "npm run typecheck -w @forgehse/shared && npm run typecheck -w @forgehse/api && npm run typecheck -w @forgehse/web",
     "build": "npm run build -w @forgehse/api && npm run build -w @forgehse/web",
     "e2e": "npm run e2e -w @forgehse/web",
-    "mock:ai": "node scripts/dev/mock-anthropic.mjs"
+    "mock:ai": "node scripts/dev/mock-anthropic.mjs",
+    "build:compute": "npm run build -w @forgehse/web && node scripts/netlify/gen-migrations.mjs && node scripts/compute/gen-web.mjs && esbuild deploy/compute/server.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/compute/server.mjs --external:pg-native --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\""
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "@prisma/composer": "^0.35.0",
+    "@prisma/composer-prisma-cloud": "^0.35.0",
+    "prisma": "^8.0.0-rc.28"
   }
 }

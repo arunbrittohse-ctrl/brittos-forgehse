@@ -70,7 +70,7 @@ export function buildDeps(config: Config, db: Db, overrides: Partial<Deps> = {})
   };
 }
 
-export function buildApp(deps: Deps) {
+export function buildApp(deps: Deps, opts: { fallback?: (req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => Promise<boolean> } = {}) {
   const router = new Router();
 
   router.use(async (ctx) => {
@@ -95,6 +95,6 @@ export function buildApp(deps: Deps) {
     secureCookies: deps.config.COOKIE_SECURE,
     log: deps.log,
     trustProxy: deps.config.NODE_ENV === 'production',
-    fallback: deps.config.WEB_DIST_DIR ? createStaticHandler(deps.config.WEB_DIST_DIR) : undefined,
+    fallback: opts.fallback ?? (deps.config.WEB_DIST_DIR ? createStaticHandler(deps.config.WEB_DIST_DIR) : undefined),
   });
 }

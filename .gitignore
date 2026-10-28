@@ -12,3 +12,8 @@ coverage/
 apps/web/e2e/screens/
 netlify/functions/_migrations.generated.ts
 .netlify/
+deploy/compute/_web.generated.ts
+dist/compute/
+.prisma/
+.prisma-composer/
+.alchemy/
