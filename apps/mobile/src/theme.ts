@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export const C = {
   // Same tokens as the web app — see DESIGN.md. Every text pair meets WCAG AA (4.5:1).
   midnight: '#0B1F3B', navy: '#0B1F3B', electric: '#2563EB', teal: '#0F766E', platinum: '#C7D2FE',
-  ink: '#0B1F3B', muted: '#5B6B82', line: '#E2E8F0', fieldBorder: '#7B8AA0', bg: '#F5F7FB', white: '#FFFFFF',
+  ink: '#111827', heading: '#0B1F3B', slate: '#475569', muted: '#5B6B82', line: '#E2E8F0', fieldBorder: '#7B8AA0', bg: '#F5F7FB', white: '#FFFFFF',
   low: '#0F766E', medium: '#92400E', high: '#C2410C', critical: '#B91C1C',
 };
 /** Type and spacing scale shared with the web (DESIGN.md). */
@@ -14,8 +14,8 @@ export const BAND_COLOR: Record<string, string> = { low: C.low, medium: C.medium
 export const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg },
   pad: { padding: 16 },
-  h1: { fontSize: 24, fontWeight: '600', color: C.ink, letterSpacing: -0.3 },
-  h2: { fontSize: 17, fontWeight: '600', color: C.ink },
+  h1: { fontSize: 24, fontWeight: '600', color: C.heading, letterSpacing: -0.3 },
+  h2: { fontSize: 17, fontWeight: '600', color: C.heading },
   body: { fontSize: 16, color: C.ink, lineHeight: 24 },
   muted: { fontSize: 14, color: C.muted },
   label: { fontSize: 14, fontWeight: '500', color: C.muted, marginBottom: 6, marginTop: 14 },

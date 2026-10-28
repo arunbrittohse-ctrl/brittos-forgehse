@@ -21,8 +21,9 @@ Pages use token names, never raw values.
 | `--bg` | #F5F7FB | #071426 | Page background |
 | `--surface` | #FFFFFF | #0D1E38 | Panels, cards, inputs |
 | `--surface-2` | #EEF2F8 | #12284A | Hover, pressed, table header, secondary fill |
-| `--ink` | #0B1F3B | #E6EDF7 | Headings and body text (15.4:1 / 15.7:1) |
-| `--ink-2` | #334155 | #C3CEDF | Secondary text |
+| `--heading` | #0B1F3B | #F1F5FB | Headings (Deep Navy) |
+| `--ink` | #111827 | #E6EDF7 | Body text (Charcoal, 17.7:1 / 15.7:1) |
+| `--ink-2` | #475569 | #C3CEDF | Secondary text (Slate, 7.6:1) |
 | `--muted` | #5B6B82 | #93A3BC | Meta text, hints (≥4.8:1 on every surface) |
 | `--line` | #E2E8F0 | #1C3354 | Dividers and card borders (decorative) |
 | `--field-border` | #7B8AA0 | #5B7396 | Input, select and textarea borders (≥3:1, WCAG 1.4.11) |

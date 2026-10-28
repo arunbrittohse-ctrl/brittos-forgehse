@@ -20,6 +20,8 @@ const envSchema = z.object({
   /** 'disk' (STORAGE_DIR) or 'postgres' (object_store table, for serverless hosts). */
   STORAGE_DRIVER: z.enum(['disk', 'postgres']).default('disk'),
   MAX_UPLOAD_MB: z.coerce.number().min(1).max(50).default(15),
+  /** Largest file accepted by the document & evidence library. */
+  LIBRARY_MAX_UPLOAD_MB: z.coerce.number().min(1).max(50).default(25),
   /** Serve the built web app from this directory (optional, single-container deploys). */
   WEB_DIST_DIR: z.string().optional(),
   /**

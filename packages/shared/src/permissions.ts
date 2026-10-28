@@ -29,6 +29,9 @@ export const PERMISSIONS = [
   'risk.view', // read the hazard register and risk insights
   'risk.manage', // create, assess, submit and review hazard register entries
   'risk.approve', // approve high/critical risk assessments (never their own submission)
+  'library.view', // read files in the document & evidence library
+  'library.upload', // upload files and new versions, link files to records
+  'library.approve', // approve or reject library file versions (never their own upload)
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -69,44 +72,46 @@ export const ORG_WIDE_ROLES: ReadonlySet<Role> = new Set<Role>([
 ]);
 
 const ALL = [...PERMISSIONS];
-const FIELD_REPORTER: Permission[] = ['dashboard.view', 'observation.view', 'observation.create', 'observation.action', 'ai.use', 'document.view', 'risk.view'];
+const FIELD_REPORTER: Permission[] = ['dashboard.view', 'observation.view', 'observation.create', 'observation.action', 'ai.use', 'document.view', 'risk.view', 'library.view', 'library.upload'];
 
 export const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
   super_admin: new Set(ALL),
   org_admin: new Set<Permission>([
     'org.admin', 'project.manage', 'user.manage', 'audit.view', 'dashboard.view',
-    'observation.view', 'report.export', 'ai.usage.view', 'document.view', 'risk.view',
+    'observation.view', 'report.export', 'ai.usage.view', 'document.view', 'risk.view', 'library.view',
   ]),
   corporate_hse_manager: new Set<Permission>([
     'audit.view', 'dashboard.view', 'observation.view', 'observation.create', 'observation.edit',
     'observation.assign', 'observation.action', 'observation.verify', 'observation.archive',
     'report.export', 'ai.use', 'ai.usage.view', 'studio.review',
     'document.view', 'document.create', 'document.approve', 'risk.view', 'risk.manage', 'risk.approve',
+    'library.view', 'library.upload', 'library.approve',
   ]),
   project_hse_manager: new Set<Permission>([
     'audit.view', 'dashboard.view', 'observation.view', 'observation.create', 'observation.edit',
     'observation.assign', 'observation.action', 'observation.verify', 'observation.archive',
     'report.export', 'ai.use', 'studio.review',
     'document.view', 'document.create', 'document.approve', 'risk.view', 'risk.manage', 'risk.approve',
+    'library.view', 'library.upload', 'library.approve',
   ]),
   hse_engineer: new Set<Permission>([
     'dashboard.view', 'observation.view', 'observation.create', 'observation.edit',
     'observation.assign', 'observation.action', 'observation.verify', 'report.export', 'ai.use', 'studio.review',
-    'document.view', 'document.create', 'risk.view', 'risk.manage',
+    'document.view', 'document.create', 'risk.view', 'risk.manage', 'library.view', 'library.upload',
   ]),
   hse_officer: new Set<Permission>([
     'dashboard.view', 'observation.view', 'observation.create', 'observation.edit',
     'observation.assign', 'observation.action', 'report.export', 'ai.use',
-    'document.view', 'document.create', 'risk.view', 'risk.manage',
+    'document.view', 'document.create', 'risk.view', 'risk.manage', 'library.view', 'library.upload',
   ]),
   project_manager: new Set<Permission>([
     'dashboard.view', 'observation.view', 'observation.create', 'observation.assign',
     'observation.action', 'report.export', 'ai.use',
-    'document.view', 'document.create', 'risk.view', 'risk.manage',
+    'document.view', 'document.create', 'risk.view', 'risk.manage', 'library.view', 'library.upload',
   ]),
   site_engineer: new Set<Permission>(FIELD_REPORTER),
   supervisor: new Set<Permission>(FIELD_REPORTER),
-  viewer: new Set<Permission>(['dashboard.view', 'observation.view', 'report.export', 'document.view', 'risk.view']),
+  viewer: new Set<Permission>(['dashboard.view', 'observation.view', 'report.export', 'document.view', 'risk.view', 'library.view']),
 };
 
 export function roleHas(role: Role, permission: Permission): boolean {
