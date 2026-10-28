@@ -35,6 +35,9 @@ jobs:
           PRISMA_COMPOSER_REPORT_FILE: ${{ runner.temp }}/deploy-report.json
         with:
           module: module.ts
+          # main deploys to the 'live' stage: the project's production branch already holds a database
+          # created outside Composer, which Composer will not adopt. Other branches keep their own previews.
+          stage: ${{ github.ref_name == 'main' && 'live' || '' }}
           # The action passes the module positionally; this CLI version needs --entry (see the script).
           install-command: npm ci && node scripts/compute/prisma-entry-shim.mjs
           build-command: npm run build:compute
